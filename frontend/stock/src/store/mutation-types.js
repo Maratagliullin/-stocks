@@ -1,0 +1,5 @@
+export const add_stock = 'add_stock'
+export const remove_stock = 'remove_stock'
+export const get_stock = 'get_stock'
+export const loading_true = 'loading_true'
+export const loading_false = 'loading_false'

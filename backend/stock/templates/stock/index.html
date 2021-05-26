@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <title>{% block title %}{% endblock %}</title>
+    {% block script %}
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    {% endblock %}
+</head>
+<body>
+{% verbatim %}
+<div id="app">
+<div class="container">
+        <div class="stock_block">
+            <form action="#" method="post">
+                  <div class="form-group">
+                      <label class="col-form-label" for="stock">Идентификатор акции</label>
+                      <textarea rows="3" v-model="stock" name="stock" type="text"  class="form-control"  id="stock" aria-describedby="phoneHelp" placeholder=""></textarea>
+                      <small id="stockHelp" class="form-text text-muted">Допускается ввод как одного, так и нескольких значений, каждое из которых начинается с новой строки</small>
+                  </div>
+                  <button type="submit" v-on:click="submit" class="btn btn-primary">Добавить</button>
+            </form>
+        </div>
+        <div class="result_block">
+             <div v-for="error in errors" class="result_item">
+                 <span class="result_label">{{error}}</span>
+             </div>
+
+            <div v-for="value in info" class="result_item">
+                <div class='result_label'>Номер телефона: <span class="result_text">{{value.number}}</span></div>
+                <div class='result_label'>Наименование оператора: <span class="result_text">{{value.operator}}</span></div>
+                <div class='result_label'>Регион: <span class="result_text">{{value.region}}</span></div>
+            </div>
+        </div>
+</div>
+</div>
+{% endverbatim %}
+</body>
+
+<script src="/static/js/app.js"></script>
+</html>

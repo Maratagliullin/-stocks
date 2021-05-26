@@ -1,0 +1,45 @@
+version: "3.7"
+
+services:
+    web: &WEB
+        image: web
+        env_file:
+            - local.env
+        build:
+            context: ./web
+            dockerfile: Dockerfile
+#        command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+        command: bash /local_run.sh
+
+        ports:
+            - "8000:8000"
+        volumes:
+            - ./web/src:/app
+        restart: on-failure
+        depends_on:
+            - db
+            - redis
+
+    db:
+        image: db
+        env_file:
+            - local.env
+        build:
+            context: ./db
+            dockerfile: Dockerfile
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+
+    redis:
+        image: redis
+        build:
+            context: ./redis
+            dockerfile: Dockerfile
+        ports:
+            - "6379:6379"
+        healthcheck:
+            test: "[ \"$$(redis-cli -h localhost -p 6379 ping)\" = \"PONG\" ]"
+
+
+volumes:
+   pgdata:
