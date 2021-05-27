@@ -36,14 +36,13 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: node:10-alpine
+    build: ./frontend
     ports:
       - '8080:8080'
-    command: npm run serve
-    volumes:
-      - ./frontend:/app
-    working_dir: /app
-    restart: on-failure
+    restart: unless-stopped
+    command: npm run serve 
+    depends_on:
+      - backend
 
 volumes:
   pgdata:
