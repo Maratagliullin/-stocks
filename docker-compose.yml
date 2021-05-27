@@ -2,6 +2,7 @@ version: '3.7'
 
 services:
   backend:
+    container_name: backend
     image: backend
     build:
       context: ./backend
@@ -36,11 +37,13 @@ services:
     restart: unless-stopped
 
   frontend:
+    image: frontend
+    container_name: frontend
     build: ./frontend
     ports:
       - '8080:8080'
     restart: unless-stopped
-    command: npm run serve 
+    command: npm run serve
     depends_on:
       - backend
 
@@ -50,4 +53,4 @@ volumes:
 
 networks:
   default:
-    name: office
+    name: stock
