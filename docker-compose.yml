@@ -40,6 +40,8 @@ services:
     image: frontend
     container_name: frontend
     build: ./frontend
+    volumes: 
+      - ./frontend/src:/app/src
     ports:
       - '8080:8080'
     restart: unless-stopped
