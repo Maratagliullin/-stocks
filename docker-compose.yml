@@ -9,7 +9,6 @@ services:
     env_file:
       - .env
     volumes:
-      - /var/www/static:/static
       - ./backend:/app
     ports:
       - '8000:8000'
