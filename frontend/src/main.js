@@ -1,8 +1,6 @@
 import Vue from 'vue'
 import App from './App.vue'
-import {BootstrapVue, BVToastPlugin, IconsPlugin} from 'bootstrap-vue'
-import axios from 'axios'
-import VueAxios from 'vue-axios'
+import {BootstrapVue, IconsPlugin} from 'bootstrap-vue'
 import VueRouter from 'vue-router'
 import Vuex from 'vuex'
 
@@ -18,13 +16,9 @@ Vue.use(Vuex)
 //vue Router
 Vue.use(VueRouter)
 Vue.use(BootstrapVue)
-//Axios-vue
-Vue.use(VueAxios, axios)
 
 // Make BootstrapVue available throughout your project
 Vue.use(BootstrapVue)
-Vue.use(BVToastPlugin)
-
 // Optionally install the BootstrapVue icon components plugin
 Vue.use(IconsPlugin)
 Vue.config.productionTip = false
@@ -32,8 +26,5 @@ Vue.config.productionTip = false
 new Vue({
   router,
   store,
-  beforeMount: function() {
-    this.$store.dispatch('getStock')
-  },
   render: (h) => h(App),
 }).$mount('#app')

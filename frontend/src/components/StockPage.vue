@@ -5,7 +5,7 @@
       :tbody-tr-class="rowClass"
       :head-variant="headVariant"
       :busy="isBusy"
-      :items="stock_state"
+      :items="getStocks"
       :fields="fields"
       stacked="md"
     >
@@ -18,18 +18,19 @@
       <template #cell(name)="row">{{ row.value.first }} {{ row.value.last }}</template>
 
       <template #cell(actions)="row">
-        <b-button size="sm" @click="showMsgBoxTwo(row.item, row.index, $event.target)">
+        <b-button variant="danger" size="sm" @click="showMsgBoxTwo(row.item, row.index, $event.target)">
           Удалить
         </b-button>
       </template>
       <template #table-caption>
-        <b class="float-right">Итого: {{ stock_state.length }}</b>
+        <b class="float-right">Итого: {{ getStocksCount }}</b>
       </template>
     </b-table>
   </div>
 </template>
 
 <script>
+import {mapGetters, mapActions} from 'vuex'
 export default {
   data() {
     return {
@@ -65,17 +66,17 @@ export default {
       },
     }
   },
-  created() {},
   watch: {
     $route: 'ticker',
   },
   computed: {
-    stock_state() {
-      return this.$store.state.stock
-    },
+    ...mapGetters(['getStocks', 'getStocksCount']),
   },
-  mounted() {},
+  async mounted() {
+    this.get_stock()
+  },
   methods: {
+    ...mapActions(['get_stock']),
     rowClass(item, type) {
       if (!item || type !== 'row') return
       if (item.stock_activity === false) return 'table-row-noactive'
@@ -84,8 +85,8 @@ export default {
       var stock_name = item.stock_name
       var stock_id = item.id
       this.$bvModal
-        .msgBoxConfirm('Подтвердите, если хотите удалить акцию ' + item.stock_name, {
-          title: 'Удаление',
+        .msgBoxConfirm('Подтвердите, если хотите удалить акцию ' + stock_name, {
+          title: 'Удаление?',
           size: 'sm',
           buttonSize: 'sm',
           okVariant: 'danger',
@@ -96,15 +97,10 @@ export default {
           centered: false,
         })
         .then((value) => {
-          if (value == true){
-          this.$store.dispatch('deleteStock', stock_id)
-          console.log(value, stock_name, stock_id)
-          this.$store.dispatch('getStock')
+          if (value == true) {
+            this.$store.dispatch('delete_stock', stock_id)
           }
         })
-      .catch(err => {
-        console.log(err)
-      })
     },
   },
 }

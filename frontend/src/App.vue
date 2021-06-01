@@ -11,17 +11,6 @@
   </div>
 </template>
 
-<script>
-
-export default {
-  data() {
-    return {
-      stock:[],
-      }
-  }
-  }
-</script>
-
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

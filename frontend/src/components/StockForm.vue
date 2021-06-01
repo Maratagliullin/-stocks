@@ -22,7 +22,7 @@
       </button>
       <transition name="fade">
         <b-spinner
-          v-show="loading_state"
+          v-show="loading"
           variant="info"
           style="width: 1.5rem; height: 1.5rem; margin-top: 5px;"
           class="float-right"
@@ -34,17 +34,21 @@
 </template>
 
 <script>
-
 export default {
   name: 'StockForm',
   data() {
     return {
       stock: null,
+      loading: false,
     }
   },
   methods: {
     onSubmit() {
-      this.$store.dispatch('createStock', {stock: this.stock})
+      this.loading = true
+      this.$store.dispatch('add_stock', {stock: this.stock}).then((success) => {
+        this.notyfyuser(success)
+        this.loading = false
+      })
     },
     notyfyuser(data) {
       var i
@@ -76,18 +80,13 @@ export default {
       }
     },
     show_toast(text, variant, title) {
-      this.$bvToast.toast(text, {
+      this.$root.$bvToast.toast(text, {
         title: title,
         autoHideDelay: 15000,
         variant: variant,
         appendToast: true,
         noCloseButton: false,
       })
-    },
-  },
-  computed: {
-    loading_state() {
-      return this.$store.state.loader
     },
   },
 }
