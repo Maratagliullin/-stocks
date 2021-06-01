@@ -108,5 +108,3 @@ class StockViews(APIView):
 
 def index(request):
     return HttpResponse("Hello, world.")
-    # loader.get_template('stock/index.html')
-    # return render(request, 'stock/index.html')
