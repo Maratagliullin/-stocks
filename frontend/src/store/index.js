@@ -5,11 +5,16 @@ import {Stock} from '../api/stock'
 
 Vue.use(Vuex)
 
+
+
+
 // Состояние
 const state = {
   stock: [], // список акций
   loader: false, // loader
 }
+
+
 
 
 // Мутации
@@ -27,10 +32,8 @@ const mutations = {
     }
   },
   // Убираем тикер из списка
-  [remove_stock](state, {id}) {
-    state.stock = state.stock.filter((stock) => {
-      return stock.id !== id
-    })
+  [remove_stock](state, stock) {
+      state.stock = stock
   },
   // Задаем список тикеров
   [get_stock](state, {stock}) {
@@ -60,8 +63,13 @@ const actions = {
   },
 }
 
+const getters = {
+
+}
+
 export default new Vuex.Store({
   state,
   actions,
   mutations,
+  getters,
 })

@@ -1,7 +1,6 @@
 <template>
   <div>
     <b-table
-      striped
       bordered
       :tbody-tr-class="rowClass"
       :head-variant="headVariant"
@@ -9,8 +8,6 @@
       :items="stock_state"
       :fields="fields"
       stacked="md"
-      show-empty
-      small
     >
       <template #table-busy>
         <div class="text-center text-danger my-2">
@@ -21,18 +18,14 @@
       <template #cell(name)="row">{{ row.value.first }} {{ row.value.last }}</template>
 
       <template #cell(actions)="row">
-        <b-button size="sm" @click="info(row.item, row.index, $event.target)">
+        <b-button size="sm" @click="showMsgBoxTwo(row.item, row.index, $event.target)">
           Удалить
         </b-button>
       </template>
       <template #table-caption>
-        <b class="float-right">Итого: {{stock_state.length}}</b>
+        <b class="float-right">Итого: {{ stock_state.length }}</b>
       </template>
     </b-table>
-    <!-- Info modal -->
-    <b-modal :id="infoModal.id" :title="infoModal.title" ok-only @hide="resetInfoModal">
-      <pre>{{ infoModal.content }} </pre>
-    </b-modal>
   </div>
 </template>
 
@@ -40,10 +33,9 @@
 export default {
   data() {
     return {
-      
       isBusy: false,
       striped: false,
-      headVariant: 'light',
+      headVariant: '',
       fields: [
         {key: 'stock_name', label: 'Акция', sortable: true, sortDirection: 'desc'},
         {key: 'stock_sector', label: 'Сектор', sortable: true, sortDirection: 'desc'},
@@ -66,19 +58,19 @@ export default {
         {key: 'actions', label: 'Удалить'},
       ],
       infoModal: {
-        id: 'info-modal',
+        id: 'modal-1',
         title: '',
         content: '',
+        stock_name: '',
       },
     }
   },
-  created() {
-  },
+  created() {},
   watch: {
     $route: 'ticker',
   },
   computed: {
-     stock_state() {
+    stock_state() {
       return this.$store.state.stock
     },
   },
@@ -88,14 +80,31 @@ export default {
       if (!item || type !== 'row') return
       if (item.stock_activity === false) return 'table-row-noactive'
     },
-    info(item, index, button) {
-      this.infoModal.title = `Row index: ${index}`
-      this.infoModal.content = JSON.stringify(item, null, 2)
-      this.$root.$emit('bv::show::modal', this.infoModal.id, button)
-    },
-    resetInfoModal() {
-      this.infoModal.title = ''
-      this.infoModal.content = ''
+    showMsgBoxTwo(item) {
+      var stock_name = item.stock_name
+      var stock_id = item.id
+      this.$bvModal
+        .msgBoxConfirm('Подтвердите, если хотите удалить акцию ' + item.stock_name, {
+          title: 'Удаление',
+          size: 'sm',
+          buttonSize: 'sm',
+          okVariant: 'danger',
+          okTitle: 'Да',
+          cancelTitle: 'Нет',
+          footerClass: 'p-2',
+          hideHeaderClose: false,
+          centered: false,
+        })
+        .then((value) => {
+          if (value == true){
+          this.$store.dispatch('deleteStock', stock_id)
+          console.log(value, stock_name, stock_id)
+          this.$store.dispatch('getStock')
+          }
+        })
+      .catch(err => {
+        console.log(err)
+      })
     },
   },
 }

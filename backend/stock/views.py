@@ -8,6 +8,7 @@ from rest_framework.serializers import ValidationError
 from .models import Stock
 from .serializers import StockSerializer
 from rest_framework import viewsets
+from rest_framework import status
 
 
 class StockViews(APIView):
@@ -93,6 +94,16 @@ class StockViews(APIView):
         queryset = Stock.objects.all()
         serializer = StockSerializer(queryset, many=True)
         return Response(serializer.data)
+
+     # Обработка DELETE get ticker
+    def delete(self, request, id, format=None):
+        print(id)
+        Stock.objects.filter(
+            id=id).update(stock_activity=False)
+
+        # snippet = Stock.get_object(id)
+        # snippet.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 def index(request):

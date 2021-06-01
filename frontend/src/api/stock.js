@@ -17,12 +17,16 @@ export const Stock = {
         //return error.response.data
       })
   },
-  delete(note) {
-    return HTTP.delete(`/delete_stock/${note.id}/`)
+  delete(stock_id) {
+    console.log(stock_id)
+    return HTTP.delete(`/delete_stock/${stock_id}/`).then((response) => {
+      notyfyuser(response.data)  
+      return this.get_stock()
+    })
   },
   get_stock() {
     return HTTP.get('/get_stock/').then((response) => {
-        return response.data
+      return response.data
     })
   },
 }

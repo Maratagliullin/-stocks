@@ -10,6 +10,7 @@ celerybeat.pid
 celerybeat-schedule
 local.env
 tmp_*
+frontend/node_modules
 frontend/stock/node_modules/
 backend/static/
 .DS_Store

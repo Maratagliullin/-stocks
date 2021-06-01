@@ -10,4 +10,4 @@ class Stock(models.Model):
     stock_industry = models.CharField(verbose_name='Индустрия', max_length=200)
     stock_activity = models.BooleanField(verbose_name='Активность акции')
     stock_identifier = models.CharField(
-        verbose_name='Идентификатор', max_length=50)
+        verbose_name='Идентификатор', max_length=50, blank=True, null=True)

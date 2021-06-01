@@ -44,11 +44,6 @@ export default {
   },
   methods: {
     onSubmit() {
-      this.createStock()
-    },
-    createStock() {
-      // Вызываем действие `createStock` из хранилища, которое
-      // отправит запрос на создание новой акции к нашему API.
       this.$store.dispatch('createStock', {stock: this.stock})
     },
     notyfyuser(data) {
