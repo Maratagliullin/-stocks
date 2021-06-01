@@ -91,7 +91,7 @@ class StockViews(APIView):
 
     # Обработка GET get ticker
     def get(self, request):
-        queryset = Stock.objects.all()
+        queryset = Stock.objects.all().order_by('stock_name')
         serializer = StockSerializer(queryset, many=True)
         return Response(serializer.data)
 

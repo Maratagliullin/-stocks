@@ -85,16 +85,6 @@ WSGI_APPLICATION = 'trading.wsgi.application'
 DATABASE_URL = os.environ['DATABASE_URL']
 DATABASES = {'default': dj_database_url.config(conn_max_age=600)}
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'postgres',
-#         'USER': 'postgres',
-#         'PASSWORD': 'postgres',
-#         'HOST': 'localhost',
-#         'PORT': '5432'
-#     }
-# }
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
