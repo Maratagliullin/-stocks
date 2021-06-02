@@ -1,4 +1,4 @@
-image: $CI_REGISTRY/rusakmarket/dockerandcompose:latest
+image: docker:20
 
 services:
   - docker:20-dind
@@ -28,6 +28,7 @@ dev-deploy and check:
 #  only:
 #    - dev
   before_script:
+    - apk update && apk add gnupg
     - mkdir -p ~/.ssh
     - echo "$DEPLOY_PRIVATE_KEY" > ~/.ssh/id_rsa
     - echo "$DEV_HOST_IP_KEY" > ~/.ssh/known_hosts
