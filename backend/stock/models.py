@@ -11,3 +11,5 @@ class Stock(models.Model):
     stock_activity = models.BooleanField(verbose_name='Активность акции')
     stock_identifier = models.CharField(
         verbose_name='Идентификатор', max_length=50, blank=True, null=True)
+    stock_url = models.CharField(
+        verbose_name='Ссылка', max_length=150, blank=True, null=True)

@@ -1,3 +1,4 @@
+// Компонент формы
 <template>
   <div class="stock_block">
     <form @submit.prevent="onSubmit">
@@ -45,11 +46,22 @@ export default {
   methods: {
     onSubmit() {
       this.loading = true
-      this.$store.dispatch('add_stock', {stock: this.stock}).then((success) => {
-        this.notyfyuser(success)
+      this.$store.dispatch('add_stock', {stock: this.stock}).then((response) => {
+        this.notyfyuser(response)
+
+        // Поиск в ответе хоть одной найденной акции
+        var status_found = response.findIndex(function(status) {
+          if (status.status == 'found') return true
+        })
+
+        // Если акция есть то обновляем стор
+        if (status_found !== -1) {
+          this.$store.dispatch('get_stock')
+        }
         this.loading = false
       })
     },
+    // Оповещения
     notyfyuser(data) {
       var i
       for (i = 0; i < data.length; i++) {
@@ -79,6 +91,7 @@ export default {
         }
       }
     },
+    // Тост
     show_toast(text, variant, title) {
       this.$root.$bvToast.toast(text, {
         title: title,

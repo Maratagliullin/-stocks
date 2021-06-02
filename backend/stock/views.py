@@ -70,7 +70,9 @@ class StockViews(APIView):
                                 stock_sector=ticker_status['stock_sector'],
                                 stock_industry=ticker_status['stock_industry'],
                                 stock_activity=True,
-                                stock_identifier='')
+                                stock_identifier='',
+                                stock_url=ticker_status['url'],
+                            )
                             s.save()
 
                             # Проверка на созранение в базе?
