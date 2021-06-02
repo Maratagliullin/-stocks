@@ -28,7 +28,7 @@
         <p  class="float-right">Итого: {{ getStocksCount }}</p>
       </template>
     </b-table>
-     <div style="text-align:center;" v-if="!getStocks.length">Данные отсутсвуют</div>
+     <div style="text-align:center;" v-if="!getStocks.length">Данные отсутствуют</div>
   </div>
 </template>
 
