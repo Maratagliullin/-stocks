@@ -1,7 +1,7 @@
 // Компонент страницы
 <template>
   <div>
-    <b-table
+    <b-table 
       bordered
       :tbody-tr-class="rowClass"
       :head-variant="headVariant"
@@ -23,10 +23,12 @@
           Удалить
         </b-button>
       </template>
-      <template #table-caption>
-        <b class="float-right">Итого: {{ getStocksCount }}</b>
+     
+      <template v-if="getStocks.length" #table-caption >
+        <p  class="float-right">Итого: {{ getStocksCount }}</p>
       </template>
     </b-table>
+     <div style="text-align:center;" v-if="!getStocks.length">Данные отсутсвуют</div>
   </div>
 </template>
 
@@ -76,6 +78,9 @@ export default {
       if (!item || type !== 'row') return
       if (item.stock_activity === false) return 'table-row-noactive'
     },
+    toggleBusy() {
+        this.isBusy = !this.isBusy
+      },
     showMsgBoxTwo(item) {
       var stock_name = item.stock_name
       var stock_id = item.id
