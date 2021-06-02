@@ -4,13 +4,8 @@ services:
   backend:
     container_name: backend
     image: $CI_REGISTRY/$CI_PROJECT_PATH/backend:${CI_COMMIT_SHA}
-    # build:
-    #   context: ./backend
     env_file:
       - .env
-    volumes:
-      - /var/www/static:/static
-#      - ./backend:/app
     ports:
       - '8000:8000'
     depends_on:
@@ -20,8 +15,6 @@ services:
   db:
     image: $CI_REGISTRY/$CI_PROJECT_PATH/db:${CI_COMMIT_SHA}
     container_name: db
-    # build:
-    #   context: ./db
     env_file:
       - .env
     volumes:
@@ -38,19 +31,14 @@ services:
   frontend:
     image: $CI_REGISTRY/$CI_PROJECT_PATH/frontend:${CI_COMMIT_SHA}
     container_name: frontend
-    # build: ./frontend
-    volumes: 
-      - ./frontend/src:/app/src
     ports:
       - '8080:8080'
     restart: unless-stopped
-    command: npm run serve
     depends_on:
       - backend
 
 volumes:
   pgdata:
-  static:
 
 networks:
   default:
