@@ -6,6 +6,6 @@ from .models import Stock
 class StockAdmin(admin.ModelAdmin):
     list_display = ('stock_name', 'stock_activity')
     list_display_links = ['stock_name']
+    readonly_fields = ['stock_url']
 
-
-admin.site.register(Stock,StockAdmin)
+admin.site.register(Stock, StockAdmin)

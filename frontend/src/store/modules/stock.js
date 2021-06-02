@@ -1,5 +1,6 @@
 export default {
   actions: {
+    // Добавление акции возвращает промис с ответом
     add_stock(ctx, data) {
       return new Promise((resolve) => {
         fetch('http://localhost:8000/api/v1/add_stock/', {
@@ -9,13 +10,11 @@ export default {
             'Content-Type': 'application/json',
           },
         }).then((response) => {
-          if (response.status != 400) {
-            ctx.dispatch('get_stock')
-          }
           resolve(response.json())
         })
       })
     },
+    // Получение всех акций
     async get_stock(ctx) {
       await fetch('http://localhost:8000/api/v1/get_stock/')
         .then((response) => {
@@ -25,6 +24,7 @@ export default {
           ctx.commit('updateStock', data)
         })
     },
+    // Удаление акции смониторинга
     async delete_stock(ctx, id) {
       await fetch('http://localhost:8000/api/v1/delete_stock/' + id + '/', {method: 'DELETE'}).then(() => {
         ctx.dispatch('get_stock')

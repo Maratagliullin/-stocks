@@ -1,3 +1,4 @@
+// Компонент страницы
 <template>
   <div>
     <b-table
@@ -58,12 +59,6 @@ export default {
         },
         {key: 'actions', label: 'Удалить'},
       ],
-      infoModal: {
-        id: 'modal-1',
-        title: '',
-        content: '',
-        stock_name: '',
-      },
     }
   },
   watch: {
