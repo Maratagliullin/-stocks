@@ -11,6 +11,7 @@ stages:
 docker-build:
   stage: build
   script:
+  - echo $REGISTRY_USER $REGISTRY_TOKEN $CI_REGISTRY
   - docker login -u $REGISTRY_USER -p $REGISTRY_TOKEN $CI_REGISTRY
   - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_PATH/frontend:$CI_COMMIT_SHA ./frontend
   - docker push $CI_REGISTRY/$CI_PROJECT_PATH/frontend:$CI_COMMIT_SHA
@@ -35,8 +36,8 @@ dev-deploy and check:
     - ssh $DEPLOY_USER@$DEV_HOST_IP hostname
     - echo "$GPG_PRIVKEY" | gpg --batch --import -
     - echo "$GPG_PUBKEY" | gpg --batch --import -
-#    - echo "$GPG_PUBKEY_ID:6:" | gpg --batch --import-ownertrust        
-    - gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSWORD" --recipient deploy@rusakova.net --output .env --decrypt .env.gpg
+    - echo "$GPG_PUBKEY_ID:6:" | gpg --batch --import-ownertrust        
+    - gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSWORD" --recipient deploy@rusakova.net --output .env --decrypt --skip-verify .env.gpg
 
   script:
     - docker login -u $REGISTRY_USER -p $REGISTRY_TOKEN $CI_REGISTRY
