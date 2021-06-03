@@ -6,8 +6,8 @@ RUN groupadd djangogroup && \
 WORKDIR /app
 
 ADD *.sh /
-ADD stock/* stock/
-ADD trading/* trading/
+ADD stock/ stock/
+ADD trading/ trading/
 ADD manage.py requirements.txt ./
 
 RUN pip install -r requirements.txt && \
