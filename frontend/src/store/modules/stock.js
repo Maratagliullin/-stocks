@@ -1,9 +1,10 @@
+const url_backend = process.env.VUE_APP_BACKEND_URL
 export default {
   actions: {
     // Добавление акции возвращает промис с ответом
     add_stock(ctx, data) {
       return new Promise((resolve) => {
-        fetch('http://localhost:8000/api/v1/add_stock/', {
+        fetch(url_backend + '/api/v1/add_stock/', {
           method: 'POST',
           body: JSON.stringify(data),
           headers: {
@@ -16,7 +17,7 @@ export default {
     },
     // Получение всех акций
     async get_stock(ctx) {
-      await fetch('http://localhost:8000/api/v1/get_stock/')
+      await fetch(url_backend + '/api/v1/get_stock/')
         .then((response) => {
           return response.json()
         })
@@ -26,7 +27,7 @@ export default {
     },
     // Удаление акции смониторинга
     async delete_stock(ctx, id) {
-      await fetch('http://localhost:8000/api/v1/delete_stock/' + id + '/', {method: 'DELETE'}).then(() => {
+      await fetch(url_backend+'/api/v1/delete_stock/' + id + '/', {method: 'DELETE'}).then(() => {
         ctx.dispatch('get_stock')
       })
     },
