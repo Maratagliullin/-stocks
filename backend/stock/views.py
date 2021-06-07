@@ -10,11 +10,14 @@ from .models import Stock
 from .serializers import StockSerializer
 from rest_framework import viewsets
 from rest_framework import status
+from django.db import transaction
+
 
 
 class StockViews(APIView):
 
     # Поиск текста в теге ниже после регульярного выражения
+
     def get_data_by_regex(self, regexp, soup):
         match_string = soup.find(text=re.compile(r'\b{}'.format(regexp)))
         if not match_string is None:
@@ -23,6 +26,7 @@ class StockViews(APIView):
             return "Данные отсутсвуют"
 
     # Проверка тикера на сушествование
+    @transaction.non_atomic_requests
     def get_tiker_status(self, stock):
         try:
             response = requests.get(
@@ -39,19 +43,15 @@ class StockViews(APIView):
             else:
                 return({'status': 'not_found', 'message': 'Акция не найдена', 'url': response.url, 'tiker': tiker.group(0)})
         except requests.exceptions.ReadTimeout:
-            print("Превышение времени ожидания ответа")
-            sys.exit()
+            return ({'status':'connection_error', 'message': 'Превышение времени ожидания ответа'})
 
         except requests.exceptions.ConnectTimeout:
-            print('Соединение с интернетом отсутсвует')
-            sys.exit()
+            return ({'status': 'connection_error', 'message': 'Время ожидания запроса истекло при попытке подключения к удаленному серверу'})
 
         except requests.exceptions.ConnectionError:
-            print('Соединение с интернетом отсутсвует')
-            sys.exit()
+            return ({'status': 'connection_error', 'message': 'Соединение с интернетом отсутсвует'})
 
     # обработка POST add ticker
-
     def post(self, request):
         if request.data['stock']:
 
@@ -78,16 +78,17 @@ class StockViews(APIView):
                             tickers.append(
                                 {'status': 'dublicate', 'tiker': ticker_status['tiker'], 'message': 'Идентификатор существует'})
                         else:
-                            # Сохраним в базе
-                            s = Stock(
-                                stock_name=ticker_status['stock_name'],
-                                stock_sector=ticker_status['stock_sector'],
-                                stock_industry=ticker_status['stock_industry'],
-                                stock_activity=True,
-                                stock_identifier='',
-                                stock_url=ticker_status['url'],
-                            )
-                            s.save()
+                            # Сохраним в базе найденный тикер
+                            with transaction.atomic():
+                                s = Stock(
+                                    stock_name=ticker_status['stock_name'],
+                                    stock_sector=ticker_status['stock_sector'],
+                                    stock_industry=ticker_status['stock_industry'],
+                                    stock_activity=True,
+                                    stock_identifier='',
+                                    stock_url=ticker_status['url'],
+                                )
+                                s.save()
 
                             # Проверка на созранение в базе?
                             if(s.pk):
@@ -113,12 +114,10 @@ class StockViews(APIView):
 
      # Обработка DELETE get ticker
     def delete(self, request, id, format=None):
-        print(id)
-        Stock.objects.filter(
-            id=id).update(stock_activity=False)
+        with transaction.atomic():
+            Stock.objects.filter(
+                id=id).update(stock_activity=False)
 
-        # snippet = Stock.get_object(id)
-        # snippet.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

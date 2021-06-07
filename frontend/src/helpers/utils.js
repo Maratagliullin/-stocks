@@ -25,5 +25,12 @@ export const notyfyuser = (data) => {
       variant = 'info'
       return {text: text, variant: variant, title: title}
     }
+      if (data[i].status == 'connection_error') {
+        text = data[i].message
+        title = 'Ошибка'
+        variant = 'danger'
+        return {text: text, variant: variant, title: title}
+      }
   }
 }
+
