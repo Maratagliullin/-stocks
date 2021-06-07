@@ -35,6 +35,7 @@
 </template>
 
 <script>
+import {notyfyuser} from '@/helpers/utils.js'
 export default {
   name: 'StockForm',
   data() {
@@ -47,8 +48,9 @@ export default {
     onSubmit() {
       this.loading = true
       this.$store.dispatch('add_stock', {stock: this.stock}).then((response) => {
-        this.notyfyuser(response)
-
+        var resp = notyfyuser(response)
+        this.show_toast(resp.text, resp.variant, resp.title)
+        
         // Поиск в ответе хоть одной найденной акции
         var status_found = response.findIndex(function(status) {
           if (status.status == 'found') return true
@@ -60,36 +62,6 @@ export default {
         }
         this.loading = false
       })
-    },
-    // Оповещения
-    notyfyuser(data) {
-      var i
-      for (i = 0; i < data.length; i++) {
-        if (data[i].status == 'found') {
-          var text = data[i].message
-          var title = data[i].tiker
-          var variant = 'success'
-          this.show_toast(text, variant, title)
-        }
-        if (data[i].status == 'not_found') {
-          text = data[i].message
-          title = data[i].tiker
-          variant = 'danger'
-          this.show_toast(text, variant, title)
-        }
-        if (data[i].status == 'empty_value') {
-          text = data[i].message
-          title = 'Ошибка'
-          variant = 'danger'
-          this.show_toast(text, variant, title)
-        }
-        if (data[i].status == 'dublicate') {
-          text = data[i].message
-          title = data[i].tiker
-          variant = 'info'
-          this.show_toast(text, variant, title)
-        }
-      }
     },
     // Тост
     show_toast(text, variant, title) {
