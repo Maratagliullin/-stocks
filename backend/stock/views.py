@@ -35,9 +35,9 @@ class StockViews(APIView):
                 stock_sector = self.get_data_by_regex('Сектор:', soup)
                 stock_industry = self.get_data_by_regex('Отрасль:', soup)
 
-                return({'status': 'found', 'message': 'Акция надена', 'url': response.url, 'tiker': tiker.group(0), 'stock_name': stock_name.text, 'stock_sector': stock_sector, 'stock_industry': stock_industry})
+                return({'status': 'found', 'message': 'Акция найдена', 'url': response.url, 'tiker': tiker.group(0), 'stock_name': stock_name.text, 'stock_sector': stock_sector, 'stock_industry': stock_industry})
             else:
-                return({'status': 'not_found', 'message': 'Акция не надена', 'url': response.url, 'tiker': tiker.group(0)})
+                return({'status': 'not_found', 'message': 'Акция не найдена', 'url': response.url, 'tiker': tiker.group(0)})
         except requests.exceptions.ReadTimeout:
             print("Превышение времени ожидания ответа")
             sys.exit()

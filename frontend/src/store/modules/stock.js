@@ -2,7 +2,7 @@ const url_backend = process.env.VUE_APP_BACKEND_URL
 export default {
   actions: {
     // Добавление акции возвращает промис с ответом
-    add_stock(data) {
+    add_stock(ctx,data) {
       return new Promise((resolve) => {
         fetch(url_backend + '/api/v1/add_stock/', {
           method: 'POST',
