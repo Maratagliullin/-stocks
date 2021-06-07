@@ -1,0 +1,65 @@
+image: docker:20
+
+services:
+  - docker:20-dind
+
+stages:
+  - build
+  - dev-deploy 
+
+##################### BUILD ############################
+docker-build:
+  stage: build
+  script:
+  - echo $REGISTRY_USER $REGISTRY_TOKEN $CI_REGISTRY
+  - docker login -u $REGISTRY_USER -p $REGISTRY_TOKEN $CI_REGISTRY
+  - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_PATH/frontend:$CI_COMMIT_SHA ./frontend
+  - docker push $CI_REGISTRY/$CI_PROJECT_PATH/frontend:$CI_COMMIT_SHA
+  - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_PATH/backend:$CI_COMMIT_SHA ./backend
+  - docker push $CI_REGISTRY/$CI_PROJECT_PATH/backend:$CI_COMMIT_SHA
+  - docker build --pull -t $CI_REGISTRY/$CI_PROJECT_PATH/db:$CI_COMMIT_SHA ./db
+  - docker push $CI_REGISTRY/$CI_PROJECT_PATH/db:$CI_COMMIT_SHA
+  tags:
+  - docker
+
+##################### DEV-DEPLOY ############################
+dev-deploy and check:
+  stage: dev-deploy
+#  only:
+#    - dev
+  before_script:
+    - apk update && apk add gnupg
+    - mkdir -p ~/.ssh
+    - echo "$DEPLOY_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - echo "$DEV_HOST_IP_KEY" > ~/.ssh/known_hosts
+    - echo -e "Host *\n\tPort 819\n\n" > ~/.ssh/config
+    - chmod -R go-rwX ~/.ssh
+    - ssh $DEPLOY_USER@$DEV_HOST_IP hostname
+    - echo "$GPG_PRIVKEY" | gpg --batch --import -
+    - echo "$GPG_PUBKEY" | gpg --batch --import -
+    - echo "$GPG_PUBKEY_ID:6:" | gpg --batch --import-ownertrust        
+    - gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSWORD" --recipient deploy@rusakova.net --output .env --decrypt --skip-verify .env.gpg
+
+  script:
+    - docker login -u $REGISTRY_USER -p $REGISTRY_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY/$CI_PROJECT_PATH/frontend:$CI_COMMIT_SHA
+    - docker pull $CI_REGISTRY/$CI_PROJECT_PATH/backend:$CI_COMMIT_SHA
+    - docker pull $CI_REGISTRY/$CI_PROJECT_PATH/db:$CI_COMMIT_SHA
+    - docker save $CI_REGISTRY/$CI_PROJECT_PATH/frontend:$CI_COMMIT_SHA | ssh $DEPLOY_USER@$DEV_HOST_IP docker load
+    - docker save $CI_REGISTRY/$CI_PROJECT_PATH/backend:$CI_COMMIT_SHA | ssh $DEPLOY_USER@$DEV_HOST_IP docker load
+    - docker save $CI_REGISTRY/$CI_PROJECT_PATH/db:$CI_COMMIT_SHA | ssh $DEPLOY_USER@$DEV_HOST_IP docker load
+
+    - echo -e "\n\nCI_REGISTRY=$CI_REGISTRY\nCI_PROJECT_PATH=$CI_PROJECT_PATH\nCI_COMMIT_SHA=$CI_COMMIT_SHA\n" >> ./.env
+    - scp .env $DEPLOY_USER@$DEV_HOST_IP:./.env
+    - scp docker-compose.yml $DEPLOY_USER@$DEV_HOST_IP:./docker-compose.yml
+    
+    - ssh $DEPLOY_USER@$DEV_HOST_IP "cd ./ && docker-compose stop && docker-compose rm -s && docker-compose up -d"
+    - sleep 30
+    - ssh $DEPLOY_USER@$DEV_HOST_IP 'docker ps --format "{{.ID}} {{.Image}} {{.Status}}"' | grep -v "(healthy)" | grep -v "redis" | grep -v "$CI_COMMIT_SHA" && { echo 'Failed!' && false; } || { echo 'All ok!' && true; }
+    - ssh $DEPLOY_USER@$DEV_HOST_IP 'if [[ -n $(docker images  | grep -v latest | grep -v "$CI_COMMIT_SHA" |  grep -v REPOSITORY | tr -s "[:space:]" | cut -d" " -f3) ]]; then docker image rm $(docker images  | grep -v latest | grep -v "$CI_COMMIT_SHA" |  grep -v REPOSITORY | tr -s "[:space:]" | cut -d" " -f3); fi'
+    - docker images
+  environment:
+    name: develop
+    url: http://$DEV_HOST_NAME
+  tags:
+    - docker

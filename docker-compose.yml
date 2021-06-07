@@ -3,26 +3,18 @@ version: '3.7'
 services:
   backend:
     container_name: backend
-    image: backend
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.local
+    image: $CI_REGISTRY/$CI_PROJECT_PATH/backend:${CI_COMMIT_SHA}
     env_file:
       - .env
-    volumes:
-      - ./backend:/app
     ports:
       - '8000:8000'
     depends_on:
       - db
     restart: unless-stopped
-    command: bash /local_run.sh
 
   db:
-    image: db
+    image: $CI_REGISTRY/$CI_PROJECT_PATH/db:${CI_COMMIT_SHA}
     container_name: db
-    build:
-      context: ./db
     env_file:
       - .env
     volumes:
@@ -37,23 +29,16 @@ services:
     restart: unless-stopped
 
   frontend:
-    image: frontend
+    image: $CI_REGISTRY/$CI_PROJECT_PATH/frontend:${CI_COMMIT_SHA}
     container_name: frontend
-    build: 
-      context: ./frontend
-      dockerfile: Dockerfile.local
-    volumes: 
-      - ./frontend/src:/app/src
     ports:
       - '8080:8080'
     restart: unless-stopped
-    command: npm run serve
     depends_on:
       - backend
 
 volumes:
   pgdata:
-  static:
 
 networks:
   default:
