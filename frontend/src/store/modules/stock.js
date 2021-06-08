@@ -1,14 +1,17 @@
 const url_backend = process.env.VUE_APP_BACKEND_URL
+import {getCookie} from '@/helpers/utils.js'
 export default {
   actions: {
     // Добавление акции возвращает промис с ответом
-    add_stock(ctx,data) {
+    add_stock(ctx, data) {
       return new Promise((resolve) => {
         fetch(url_backend + '/api/v1/add_stock/', {
           method: 'POST',
+          mode: 'cors',
           body: JSON.stringify(data),
           headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
           },
         }).then((response) => {
           resolve(response.json())
@@ -27,7 +30,7 @@ export default {
     },
     // Удаление акции смониторинга
     async delete_stock(ctx, id) {
-      await fetch(url_backend+'/api/v1/delete_stock/' + id + '/', {method: 'DELETE'}).then(() => {
+      await fetch(url_backend + '/api/v1/delete_stock/' + id + '/', {method: 'DELETE'}).then(() => {
         ctx.dispatch('get_stock')
       })
     },
