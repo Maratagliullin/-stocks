@@ -30,7 +30,11 @@ export default {
     },
     // Удаление акции смониторинга
     async delete_stock(ctx, id) {
-      await fetch(url_backend + '/api/v1/delete_stock/' + id + '/', {method: 'DELETE'}).then(() => {
+      await fetch(url_backend + '/api/v1/delete_stock/' + id + '/', {
+        method: 'DELETE',
+        mode: 'cors',
+        headers: {'X-CSRFToken': getCookie('csrftoken')},
+      }).then(() => {
         ctx.dispatch('get_stock')
       })
     },
