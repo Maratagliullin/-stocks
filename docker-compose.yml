@@ -1,0 +1,45 @@
+version: '3.7'
+
+services:
+  backend:
+    container_name: backend
+    image: $CI_REGISTRY/$CI_PROJECT_PATH/backend:${CI_COMMIT_SHA}
+    env_file:
+      - .env
+    ports:
+      - '8000:8000'
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: $CI_REGISTRY/$CI_PROJECT_PATH/db:${CI_COMMIT_SHA}
+    container_name: db
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  frontend:
+    image: $CI_REGISTRY/$CI_PROJECT_PATH/frontend:${CI_COMMIT_SHA}
+    container_name: frontend
+    ports:
+      - '8080:8080'
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+
+networks:
+  default:
+    name: stock

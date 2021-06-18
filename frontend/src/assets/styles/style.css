@@ -1,0 +1,68 @@
+.stock_block {
+  /* margin-top: 100px; */
+  border: 2px solid #f7f7f9;
+  border-width: 0.4em;
+  display: block;
+  height: 100%;
+  padding: 20px;
+  width: 500px;
+  border-radius: 5px;
+}
+.result_item {
+  margin: 0 auto;
+  width: 500px;
+  border: 2px solid #f7f7f9;
+  border-width: 0.4em;
+  padding: 20px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  margin-top: 15px;
+}
+.result_text {
+  color: #000;
+  font-size: 14px;
+  font-weight: 400;
+}
+.result_label {
+  color: #717881;
+  font-size: 14px;
+  font-weight: 100;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active до версии 2.1.8 */ {
+  opacity: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active до версии 2.1.8 */ {
+  opacity: 0;
+}
+
+table.b-table[aria-busy='true'] {
+  opacity: 0.6;
+}
+
+.table-row-noactive {
+  color: #00000069;
+}
+
+@keyframes changed {
+  0% {
+    background-color: #e3ffe1; /*green*/
+     /* background-color: #e1f7ff blue */
+  }
+  100% {
+    background-color: none;
+  }
+}
+
+.changed {
+  animation: changed 1.5s;
+}
