@@ -28,7 +28,7 @@
         <p class="float-right">Итого: {{ getStocksCount }}</p>
       </template>
     </b-table>
-    <div style="text-align:center;" v-if="!getStocks.length">Данные отсутствуют</div>
+    <div style="text-align:center;">{{ data_status }}</div>
   </div>
 </template>
 
@@ -37,7 +37,8 @@ import {mapGetters, mapActions} from 'vuex'
 export default {
   data() {
     return {
-      isBusy: false,
+      isBusy: true,
+      data_status: '',
       striped: false,
       headVariant: '',
       fields: [
@@ -80,6 +81,16 @@ export default {
   },
   watch: {
     $route: 'ticker',
+    getStocks(data) {
+      if (data.length > 0) {
+        this.isBusy = false
+      } else if (this.getStocks.length == 0) {
+        this.isBusy = false
+        this.data_status='Данные отсутствуют'
+      } else {
+        this.isBusy = true
+      }
+    },
   },
   computed: {
     ...mapGetters({
