@@ -28,13 +28,13 @@ dev-deploy and check:
   before_script:
     - apk update && apk add gnupg jq
     - mkdir -p ~/.ssh
-    - echo $DEPLOY_PRIVATE_KEY > ~/.ssh/id_rsa
-    - echo $DEV_HOST_IP_KEY > ~/.ssh/known_hosts
+    - echo "$DEPLOY_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - echo "$DEV_HOST_IP_KEY" > ~/.ssh/known_hosts
     - echo -e "Host *\n\tPort 819\n\n" > ~/.ssh/config
     - chmod -R go-rwX ~/.ssh
     - ssh $DEPLOY_USER@$DEV_HOST_IP hostname
-    - echo $GPG_PRIVKEY | gpg --batch --import -
-    - echo $GPG_PUBKEY | gpg --batch --import -
+    - echo "$GPG_PRIVKEY" | gpg --batch --import -
+    - echo "$GPG_PUBKEY" | gpg --batch --import -
     - echo "$GPG_PUBKEY_ID:6:" | gpg --batch --import-ownertrust        
     - gpg --batch --pinentry-mode loopback --passphrase $GPG_PASSWORD --recipient deploy@rusakova.net --output .env --decrypt --skip-verify .env.gpg
 
