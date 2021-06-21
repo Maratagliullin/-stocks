@@ -53,7 +53,7 @@ dev-deploy and check:
     - for i in $BROWSERS; do ssh $DEPLOY_USER@$DEV_HOST_IP docker pull $i; done
 
     - ssh $DEPLOY_USER@$DEV_HOST_IP "cd && docker-compose stop && docker-compose rm -s && docker-compose up -d"
-    - sleep 30
+    - sleep 60
     - ssh $DEPLOY_USER@$DEV_HOST_IP 'docker ps --format "{{.ID}} {{.Image}} {{.Status}}"' | grep -v "(healthy)" | grep -v "redis" | grep -v "$CI_COMMIT_SHA" && { echo 'Failed!' && false; } || { echo 'All ok!' && true; }
     - ssh $DEPLOY_USER@$DEV_HOST_IP 'if [[ -n $(docker images  | grep -v latest | grep -v "$CI_COMMIT_SHA" |  grep -v REPOSITORY | tr -s "[:space:]" | cut -d" " -f3) ]]; then docker image rm $(docker images  | grep -v latest | grep -v "$CI_COMMIT_SHA" |  grep -v REPOSITORY | tr -s "[:space:]" | cut -d" " -f3); fi'
     - docker images

@@ -44,11 +44,13 @@ services:
 
   celery:
     <<: *BACKEND
+    container_name: celery
     ports: []
     command: ["celery", "-A", "trading", "worker", "-l", "info"]
 
   celery-beat:
     <<: *BACKEND
+    container_name: celery-beat
     ports: []
     command: ["celery", "-A", "trading", "beat", "-l", "info"]
 
