@@ -37,8 +37,11 @@ dev-deploy and check:
     - echo "$GPG_PUBKEY" | gpg --batch --import -
     - echo "$GPG_PUBKEY_ID:6:" | gpg --batch --import-ownertrust        
     - gpg --batch --pinentry-mode loopback --passphrase $GPG_PASSWORD --recipient deploy@rusakova.net --output .env --decrypt --skip-verify .env.gpg
+    - echo -e "\n\nCI_REGISTRY=$CI_REGISTRY\nCI_PROJECT_PATH=$CI_PROJECT_PATH\nCI_COMMIT_SHA=$CI_COMMIT_SHA\n" >> ./.env
 
   script:
+    - ls
+    - scp {./.env,./docker-compose.yml,./selenoid/browsers.json} $DEPLOY_USER@$DEV_HOST_IP:~
     - docker login -u $REGISTRY_USER -p $REGISTRY_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY/$CI_PROJECT_PATH/frontend:$CI_COMMIT_SHA
     - docker pull $CI_REGISTRY/$CI_PROJECT_PATH/backend:$CI_COMMIT_SHA
@@ -46,10 +49,7 @@ dev-deploy and check:
     - docker save $CI_REGISTRY/$CI_PROJECT_PATH/frontend:$CI_COMMIT_SHA | ssh $DEPLOY_USER@$DEV_HOST_IP docker load
     - docker save $CI_REGISTRY/$CI_PROJECT_PATH/backend:$CI_COMMIT_SHA | ssh $DEPLOY_USER@$DEV_HOST_IP docker load
     - docker save $CI_REGISTRY/$CI_PROJECT_PATH/db:$CI_COMMIT_SHA | ssh $DEPLOY_USER@$DEV_HOST_IP docker load
-
-    - echo -e "\n\nCI_REGISTRY=$CI_REGISTRY\nCI_PROJECT_PATH=$CI_PROJECT_PATH\nCI_COMMIT_SHA=$CI_COMMIT_SHA\n" >> ./.env
-    - scp {.env,docker-compose.yml,selenoid/browsers.json} $DEPLOY_USER@$DEV_HOST_IP:~
-    
+        
     # pull selenoid images
     - BROWSERS=$(cat selenoid/browsers.json | jq '.[].versions[].image')
     - echo $BROWSERS
