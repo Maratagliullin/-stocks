@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import _find_element
 import json
 from django.db import transaction
-
+import pickle
 
 @shared_task
 def get_investing_identify():
@@ -63,6 +63,8 @@ class text_to_change(object):
     def __call__(self, driver):
         element_text = _find_element(driver, self.locator).text
         return element_text != self.empty_data
+
+
 
 
 # Получние данных с tradingview.com
@@ -118,7 +120,6 @@ def get_trading_data():
                         json_value=data
                     )
                     s.save()
-                return data
             else:
                 with transaction.atomic():
                     s = SourceDataCompany(
@@ -128,38 +129,46 @@ def get_trading_data():
                         json_value={'status':'Произошла ошибка'}
                     )
                     s.save()
-                return 'Произошла ошибка'      
+                return 'Произошла ошибка'
+            res.append(data)
+        return res
     else:
         return 'There are no search data available on investing.com'
 
 
+def clear_text(row):
+    return row.get_text(
+    ).replace('\n', '').replace('\r', '').replace('\t', '').strip()
+
 # Получние данных с investing.com
 @shared_task
 def get_investing_data():
-    stock_data = Stock.objects.filter(stock_activity=True)
+    res = []
+    stock_data = Stock.objects.filter(
+        stock_activity=True).exclude(investing_dentifier='Идентификатор не найден').exclude(investing_dentifier__isnull=True)
     if stock_data:
         for item in stock_data:
-            if item.investing_dentifier != "Идентификатор не найден":
-                investing_dentifier = item.investing_dentifier
-                stock_ticker = item.stock_ticker
-                capabilities = {
-                    "resolution": "1920x1080",
-                    "browserName": "chrome",
-                    "browserVersion": "91.0",
-                    "selenoid:options": {
-                        "enableVNC": False,
-                        "enableVideo": False,
-                    }
+            investing_dentifier = item.investing_dentifier
+            stock_ticker = item.stock_ticker
+            capabilities = {
+                "resolution": "1920x1080",
+                "browserName": "chrome",
+                "browserVersion": "91.0",
+                "selenoid:options": {
+                    "enableVNC": False,
+                    "enableVideo": False,
                 }
-                driver = webdriver.Remote(
-                    command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
+            }
+            driver = webdriver.Remote(
+                command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
 
-                source_url = investing_dentifier+'-balance-sheet'
-                driver.get(source_url)
-                soup = BeautifulSoup(driver.page_source, 'html.parser')
-                driver.quit()
-                # Заголовки с периодом
-                table_header = soup.find('tr', attrs={'id': 'header_row'})
+            source_url = investing_dentifier+'-balance-sheet'
+            driver.get(source_url)
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            driver.quit()
+            # Заголовки с периодом
+            table_header = soup.find('tr', attrs={'id': 'header_row'})
+            if not table_header is None:
                 fin_table = []
                 table_header_items = table_header.find_all('th')
                 for table_header_item in table_header_items:
@@ -167,9 +176,6 @@ def get_investing_data():
                         '\n', '/')
                     fin_table.append(table_header)
 
-                def clear_text(row):
-                    return row.get_text(
-                    ).replace('\n', '').replace('\r', '').replace('\t', '').strip()
 
                 # Ищем таблицу
                 find_table = soup.find(
@@ -224,6 +230,17 @@ def get_investing_data():
                         json_value=row_object
                     )
                     s.save()
-        return row_object
+            else:
+                with transaction.atomic():
+                    s = SourceDataCompany(
+                        stock_ticker=stock_ticker,
+                        source="Investing",
+                        source_url=source_url,
+                        json_value={'status': 'Произошла ошибка'}
+                    )
+                    s.save()
+                return 'Произошла ошибка'
+            res.append(row_object)
+        return res
     else:
         return 'There are no search data available on investing.com'

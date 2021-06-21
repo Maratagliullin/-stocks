@@ -131,21 +131,22 @@ CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BEAT_SCHEDULE = {
-    'search_investing': {
-        'task': 'stock.tasks.get_investing_identify',
-        'schedule': 300
-    },
+    # 'search_investing': {
+    #     'task': 'stock.tasks.get_investing_identify',
+    #     'schedule': 300
+    # },
     'search_trading': {
         'task': 'stock.tasks.get_trading_data',
-        'schedule': 3600
+        'schedule': 43200
     },
     'search_investing_data': {
         'task': 'stock.tasks.get_investing_data',
-        'schedule': 3600
+        'schedule': 43200
     },
 }
-CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 

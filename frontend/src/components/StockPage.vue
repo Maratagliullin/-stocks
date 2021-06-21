@@ -12,7 +12,7 @@
       stacked="md"
     >
       <template #table-busy>
-        <div class="text-center text-danger my-2">
+        <div class="text-center text-info my-2">
           <b-spinner small class="align-middle"></b-spinner>
           <strong>Загрузка...</strong>
         </div>
@@ -84,6 +84,7 @@ export default {
     getStocks(data) {
       if (data.length > 0) {
         this.isBusy = false
+        this.data_status=''
       } else if (this.getStocks.length == 0) {
         this.isBusy = false
         this.data_status='Данные отсутствуют'
