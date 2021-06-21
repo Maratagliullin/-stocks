@@ -50,7 +50,7 @@ dev-deploy and check:
     - docker save $CI_REGISTRY/$CI_PROJECT_PATH/frontend:$CI_COMMIT_SHA | ssh $DEPLOY_USER@$DEV_HOST_IP docker load
     - docker save $CI_REGISTRY/$CI_PROJECT_PATH/backend:$CI_COMMIT_SHA | ssh $DEPLOY_USER@$DEV_HOST_IP docker load
     - docker save $CI_REGISTRY/$CI_PROJECT_PATH/db:$CI_COMMIT_SHA | ssh $DEPLOY_USER@$DEV_HOST_IP docker load
-    - for image in $BROWSERS; do ssh $DEPLOY_USER@$DEV_HOST_IP 'docker pull $image'; done
+    - for i in $BROWSERS; do ssh $DEPLOY_USER@$DEV_HOST_IP docker pull $i; done
 
     - ssh $DEPLOY_USER@$DEV_HOST_IP "cd && docker-compose stop && docker-compose rm -s && docker-compose up -d"
     - sleep 30
