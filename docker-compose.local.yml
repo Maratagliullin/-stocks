@@ -1,8 +1,8 @@
 version: '3.7'
 
 services:
-  backend:
-    container_name: backend
+  backend: &BACKEND
+    # container_name: backend
     image: backend
     build:
       context: ./backend
@@ -18,6 +18,16 @@ services:
     restart: unless-stopped
     command: bash /local_run.sh
 
+  celery:
+    <<: *BACKEND
+    ports: []
+    command: ["celery", "-A", "trading", "worker", "-l", "info"]
+
+  celery-beat:
+    <<: *BACKEND
+    ports: []
+    command: ["celery", "-A", "trading", "beat", "-l", "info"]
+ 
   db:
     image: db
     container_name: db
@@ -39,10 +49,10 @@ services:
   frontend:
     image: frontend
     container_name: frontend
-    build: 
+    build:
       context: ./frontend
       dockerfile: Dockerfile.local
-    volumes: 
+    volumes:
       - ./frontend/src:/app/src
     ports:
       - '8080:8080'
@@ -50,6 +60,43 @@ services:
     command: npm run serve
     depends_on:
       - backend
+  
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   restart: unless-stopped
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: marat.agl@gmail.com
+  #     PGADMIN_DEFAULT_PASSWORD: Admin
+  #   ports:
+  #     - "8082:80"
+
+  selenoid:
+    image: aerokube/selenoid:latest-release
+    container_name: selenoid
+    ports:
+      - '4444:4444'
+    volumes:
+      - './selenoid/browsers.json:/etc/selenoid/browsers.json'
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    command: ['-conf', '/etc/selenoid/browsers.json','-container-network', 'stock']
+    
+
+  selenoid-ui:
+    image: "aerokube/selenoid-ui"
+    container_name: selenoid-ui
+    links:
+      - selenoid
+    depends_on:
+      - selenoid
+    ports:
+      - '8081:8080'
+    command: ['--selenoid-uri', 'http://selenoid:4444']
+
+  redis:
+    image: redis
+    ports:
+      - '6379:6379'
+   
 
 volumes:
   pgdata:

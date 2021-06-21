@@ -11,39 +11,59 @@ from .serializers import StockSerializer
 from rest_framework import viewsets
 from rest_framework import status
 from django.db import transaction
-
+from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.support.ui import WebDriverWait
+from .tasks import get_investing_identify
 
 
 class StockViews(APIView):
 
     # Поиск текста в теге ниже после регульярного выражения
-
     def get_data_by_regex(self, regexp, soup):
         match_string = soup.find(text=re.compile(r'\b{}'.format(regexp)))
+        # print(match_string)
         if not match_string is None:
-            return match_string.find_next().text.strip()
+            return match_string.find_next('span', attrs={'class': 'tv-widget-description__value'}).text.strip()
         else:
             return "Данные отсутсвуют"
+
+    def setUp(self):
+        self.driver = webdriver.Firefox()
 
     # Проверка тикера на сушествование
     @transaction.non_atomic_requests
     def get_tiker_status(self, stock):
         try:
-            response = requests.get(
+            response_tradingview = requests.get(
                 "https://ru.tradingview.com/symbols/"+stock+"/")
-            tiker = re.search('(?<=/symbols/).*?(?=/)', response.url)
-            if response.status_code != 404:
-                soup = BeautifulSoup(response.text, 'html.parser')
-                stock_name = soup.find(
+            stock_ticker = re.search('(?<=/symbols/).*?(?=/)',
+                                     response_tradingview.url)
+            if response_tradingview.status_code != 404:
+                soup_tradingview = BeautifulSoup(
+                    response_tradingview.text, 'html.parser')
+                stock_name = soup_tradingview.find(
                     'div', class_='tv-symbol-header__first-line')
-                stock_sector = self.get_data_by_regex('Сектор:', soup)
-                stock_industry = self.get_data_by_regex('Отрасль:', soup)
+                stock_sector = self.get_data_by_regex(
+                    'Сектор:', soup_tradingview)
+                stock_industry = self.get_data_by_regex(
+                    'Отрасль:', soup_tradingview)
 
-                return({'status': 'found', 'message': 'Акция найдена', 'url': response.url, 'tiker': tiker.group(0), 'stock_name': stock_name.text, 'stock_sector': stock_sector, 'stock_industry': stock_industry})
+                stock_name = stock_name.text
+                url_investing = "https://ru.investing.com/search/?q="+stock_name+"/"
+                capabilities = {
+                    "browserName": "chrome",
+                    "browserVersion": "91.0",
+                    "selenoid:options": {
+                        "enableVNC": False,
+                        "enableVideo": False,
+                    }
+                }
+                return({'status': 'found', 'message': 'Акция найдена', 'tradingview_dentifier': response_tradingview.url, 'stock_ticker': stock_ticker.group(0), 'stock_name': stock_name, 'stock_sector': stock_sector, 'stock_industry': stock_industry})
             else:
-                return({'status': 'not_found', 'message': 'Акция не найдена', 'url': response.url, 'tiker': tiker.group(0)})
+                return({'status': 'not_found', 'message': 'Акция не найдена', 'tradingview_dentifier': response_tradingview.url, 'stock_ticker': stock_ticker.group(0)})
         except requests.exceptions.ReadTimeout:
-            return ({'status':'connection_error', 'message': 'Превышение времени ожидания ответа'})
+            return ({'status': 'connection_error', 'message': 'Превышение времени ожидания ответа'})
 
         except requests.exceptions.ConnectTimeout:
             return ({'status': 'connection_error', 'message': 'Время ожидания запроса истекло при попытке подключения к удаленному серверу'})
@@ -58,9 +78,9 @@ class StockViews(APIView):
             # Извлекаем тикеры
             tickers = []
             data = request.data['stock'].split('\n')
-            for tiker in data:
-                if tiker:
-                    ticker_status = self.get_tiker_status(tiker)
+            for stock_ticker in data:
+                if stock_ticker:
+                    ticker_status = self.get_tiker_status(stock_ticker)
 
                     # Если тикер найден
                     if ticker_status['status'] == 'found':
@@ -76,7 +96,7 @@ class StockViews(APIView):
                         # Дубликат наден
                         if found_stock_name != None:
                             tickers.append(
-                                {'status': 'dublicate', 'tiker': ticker_status['tiker'], 'message': 'Идентификатор существует'})
+                                {'status': 'dublicate', 'stock_ticker': ticker_status['stock_ticker'], 'message': 'Идентификатор существует'})
                         else:
                             # Сохраним в базе найденный тикер
                             with transaction.atomic():
@@ -85,11 +105,14 @@ class StockViews(APIView):
                                     stock_sector=ticker_status['stock_sector'],
                                     stock_industry=ticker_status['stock_industry'],
                                     stock_activity=True,
-                                    stock_identifier='',
-                                    stock_url=ticker_status['url'],
+                                    tradingview_dentifier=ticker_status['tradingview_dentifier'],
+                                    stock_ticker=ticker_status['stock_ticker'],
                                 )
                                 s.save()
-
+                                print(s.stock_name)
+                                # get_investing_identify.delay()
+                                get_investing_identify.apply_async(
+                                    countdown=30)
                             # Проверка на созранение в базе?
                             if(s.pk):
                                 tickers.append(ticker_status)

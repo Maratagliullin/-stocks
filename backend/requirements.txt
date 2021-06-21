@@ -12,3 +12,9 @@ requests
 bs4
 lxml
 django-cors-headers
+selenium
+celery==4.4.1
+django-redis
+django-celery-beat
+django_celery_results
+django-json-widget

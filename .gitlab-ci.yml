@@ -25,10 +25,8 @@ docker-build:
 ##################### DEV-DEPLOY ############################
 dev-deploy and check:
   stage: dev-deploy
-#  only:
-#    - dev
   before_script:
-    - apk update && apk add gnupg
+    - apk update && apk add gnupg jq
     - mkdir -p ~/.ssh
     - echo "$DEPLOY_PRIVATE_KEY" > ~/.ssh/id_rsa
     - echo "$DEV_HOST_IP_KEY" > ~/.ssh/known_hosts
@@ -38,9 +36,13 @@ dev-deploy and check:
     - echo "$GPG_PRIVKEY" | gpg --batch --import -
     - echo "$GPG_PUBKEY" | gpg --batch --import -
     - echo "$GPG_PUBKEY_ID:6:" | gpg --batch --import-ownertrust        
-    - gpg --batch --pinentry-mode loopback --passphrase "$GPG_PASSWORD" --recipient deploy@rusakova.net --output .env --decrypt --skip-verify .env.gpg
+    - gpg --batch --pinentry-mode loopback --passphrase $GPG_PASSWORD --recipient deploy@rusakova.net --output .env --decrypt --skip-verify .env.gpg
+    - echo -e "\n\nCI_REGISTRY=$CI_REGISTRY\nCI_PROJECT_PATH=$CI_PROJECT_PATH\nCI_COMMIT_SHA=$CI_COMMIT_SHA\n" >> .env
+    - BROWSERS=$(cat selenoid/browsers.json | jq '.[].versions[].image')
+    - echo $BROWSERS
 
   script:
+    - for i in .env docker-compose.yml selenoid/browsers.json; do scp $i $DEPLOY_USER@$DEV_HOST_IP:~; done
     - docker login -u $REGISTRY_USER -p $REGISTRY_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY/$CI_PROJECT_PATH/frontend:$CI_COMMIT_SHA
     - docker pull $CI_REGISTRY/$CI_PROJECT_PATH/backend:$CI_COMMIT_SHA
@@ -48,16 +50,14 @@ dev-deploy and check:
     - docker save $CI_REGISTRY/$CI_PROJECT_PATH/frontend:$CI_COMMIT_SHA | ssh $DEPLOY_USER@$DEV_HOST_IP docker load
     - docker save $CI_REGISTRY/$CI_PROJECT_PATH/backend:$CI_COMMIT_SHA | ssh $DEPLOY_USER@$DEV_HOST_IP docker load
     - docker save $CI_REGISTRY/$CI_PROJECT_PATH/db:$CI_COMMIT_SHA | ssh $DEPLOY_USER@$DEV_HOST_IP docker load
+    - for i in $BROWSERS; do ssh $DEPLOY_USER@$DEV_HOST_IP docker pull $i; done
 
-    - echo -e "\n\nCI_REGISTRY=$CI_REGISTRY\nCI_PROJECT_PATH=$CI_PROJECT_PATH\nCI_COMMIT_SHA=$CI_COMMIT_SHA\n" >> ./.env
-    - scp .env $DEPLOY_USER@$DEV_HOST_IP:./.env
-    - scp docker-compose.yml $DEPLOY_USER@$DEV_HOST_IP:./docker-compose.yml
-    
-    - ssh $DEPLOY_USER@$DEV_HOST_IP "cd ./ && docker-compose stop && docker-compose rm -s && docker-compose up -d"
-    - sleep 30
+    - ssh $DEPLOY_USER@$DEV_HOST_IP "cd && docker-compose stop && docker-compose rm -s && docker-compose up -d"
+    - sleep 60
     - ssh $DEPLOY_USER@$DEV_HOST_IP 'docker ps --format "{{.ID}} {{.Image}} {{.Status}}"' | grep -v "(healthy)" | grep -v "redis" | grep -v "$CI_COMMIT_SHA" && { echo 'Failed!' && false; } || { echo 'All ok!' && true; }
     - ssh $DEPLOY_USER@$DEV_HOST_IP 'if [[ -n $(docker images  | grep -v latest | grep -v "$CI_COMMIT_SHA" |  grep -v REPOSITORY | tr -s "[:space:]" | cut -d" " -f3) ]]; then docker image rm $(docker images  | grep -v latest | grep -v "$CI_COMMIT_SHA" |  grep -v REPOSITORY | tr -s "[:space:]" | cut -d" " -f3); fi'
     - docker images
+
   environment:
     name: develop
     url: http://$DEV_HOST_NAME

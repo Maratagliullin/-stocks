@@ -48,9 +48,25 @@ export default {
     onSubmit() {
       this.loading = true
       this.$store.dispatch('add_stock', {stock: this.stock}).then((response) => {
-        var resp = notyfyuser(response)
-        this.show_toast(resp.text, resp.variant, resp.title)
-        
+        var data_response = notyfyuser(response)
+        var i
+        for (i = 0; i < data_response.length; i++) {
+          for (var item in data_response[i]) {
+            if (item == 'title') {
+              var title = data_response[i][item]
+              // console.log(title)
+            }
+            if (item == 'variant') {
+              var variant = data_response[i][item]
+              // console.log(variant)
+            }
+            if (item == 'text') {
+              var text = data_response[i][item]
+              // console.log(text)
+            }      
+          }
+           this.show_toast(text, variant, title)
+        }
         // Поиск в ответе хоть одной найденной акции
         var status_found = response.findIndex(function(status) {
           if (status.status == 'found') return true

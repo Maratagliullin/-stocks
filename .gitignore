@@ -14,10 +14,10 @@ frontend/node_modules
 frontend/stock/node_modules/
 backend/static/
 .DS_Store
-.env
 .vscode/launch.json
 .vscode/settings.json
 .vscode/
 frontend/stock/src/views/Home.vue
 frontend/stock/src/views/About.vue
 frontend/stock/src/components/BootstrapToast.vue
+ghostdriver.log

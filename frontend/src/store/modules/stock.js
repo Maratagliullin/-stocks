@@ -1,5 +1,5 @@
 const url_backend = process.env.VUE_APP_BACKEND_URL
-import {getCookie} from '@/helpers/utils.js'
+import {getCookie, comparer} from '@/helpers/utils.js'
 export default {
   actions: {
     // Добавление акции возвращает промис с ответом
@@ -41,11 +41,24 @@ export default {
   },
   mutations: {
     updateStock(state, stocks) {
+      var new_stocks = stocks.filter(comparer(state.stock))
+
+      // changed row
+      var class_row = []
+      if (state.stock.length == stocks.length && state.stock.length != 0) {
+        console.log('changed new value', new_stocks)
+        for (var items in new_stocks) {
+          var stock_id_changea = new_stocks[items].id
+          class_row.push({class: 'info', id: stock_id_changea})
+        }
+        state.stock_class_row = class_row
+      }
       state.stock = stocks
     },
   },
   state: {
     stock: [],
+    stock_class_row: [],
   },
   getters: {
     getStocks(state) {
@@ -53,6 +66,9 @@ export default {
     },
     getStocksCount(state) {
       return state.stock.length
+    },
+    stockClassRow(state) {
+      return state.stock_class_row
     },
   },
 }
