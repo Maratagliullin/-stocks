@@ -42,8 +42,7 @@ dev-deploy and check:
     - echo $BROWSERS
 
   script:
-#    - for i in {.env,docker-compose.yml,selenoid/browsers.json}; do scp $i $DEPLOY_USER@$DEV_HOST_IP:~; done
-    - bash -c 'scp {.env,docker-compose.yml,selenoid/browsers.json} $DEPLOY_USER@$DEV_HOST_IP:~'
+    - for i in .env docker-compose.yml selenoid/browsers.json; do scp $i $DEPLOY_USER@$DEV_HOST_IP:~; done
     - docker login -u $REGISTRY_USER -p $REGISTRY_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY/$CI_PROJECT_PATH/frontend:$CI_COMMIT_SHA
     - docker pull $CI_REGISTRY/$CI_PROJECT_PATH/backend:$CI_COMMIT_SHA
