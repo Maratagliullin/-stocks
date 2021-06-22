@@ -137,7 +137,7 @@ CELERY_BEAT_SCHEDULE = {
     # },
     'search_trading': {
         'task': 'stock.tasks.get_trading_data',
-        'schedule': 3600
+        'schedule': 3700
         
     },
     'search_investing_data': {
