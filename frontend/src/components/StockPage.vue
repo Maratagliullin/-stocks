@@ -35,6 +35,7 @@
 <script>
 import {mapGetters, mapActions} from 'vuex'
 export default {
+  name: 'StockPage',
   data() {
     return {
       isBusy: true,

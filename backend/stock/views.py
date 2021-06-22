@@ -78,6 +78,7 @@ class StockViews(APIView):
             # Извлекаем тикеры
             tickers = []
             data = request.data['stock'].split('\n')
+            saved_tiker=[]
             for stock_ticker in data:
                 if stock_ticker:
                     ticker_status = self.get_tiker_status(stock_ticker)
@@ -110,16 +111,19 @@ class StockViews(APIView):
                                 )
                                 s.save()
                                 print(s.stock_name)
-                                # get_investing_identify.delay()
-                                get_investing_identify.apply_async(
-                                    countdown=30)
-                            # Проверка на созранение в базе?
+                                
+                            # Проверка на сохранение в базе?
                             if(s.pk):
+                                saved_tiker.append(s.pk)
                                 tickers.append(ticker_status)
                     else:
                         # Тикер не найден
                         tickers.append(ticker_status)
-
+            if saved_tiker:
+                print(saved_tiker)
+                get_investing_identify.apply_async(
+                countdown=30)
+            
             if not tickers:
                 raise ValidationError(
                     [{'status': 'empty_value', 'message': 'Идентификаторы акции должны быть заполнены'}])

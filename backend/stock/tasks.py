@@ -14,6 +14,7 @@ import pickle
 
 @shared_task
 def get_investing_identify():
+    res=[]
     stock_data = Stock.objects.filter(investing_dentifier__isnull=True)
     if stock_data:
         for item in stock_data:
@@ -49,7 +50,8 @@ def get_investing_identify():
             with transaction.atomic():
                 item.investing_dentifier = investing_identify
                 item.save()
-        return([stock_name, investing_identify])
+            res.append([stock_name, investing_identify])
+        return res
     else:
         return 'There are no search data available on investing.com'
 

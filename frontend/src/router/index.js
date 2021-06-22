@@ -13,12 +13,12 @@ const routes = [
   },
   {
     path: '/stockform',
-    name: 'stockform',
+    name: 'StockForm',
     component: StockForm,
   },
   {
     path: '/tiker',
-    name: 'tiker',
+    name: 'StockPage',
     component: Stockpage,
   },
 ]
