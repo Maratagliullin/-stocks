@@ -19,41 +19,41 @@ export default {
       })
     },
     // Получение всех акций
-    async get_stock(ctx) {
+    async get_stock(ctx, operation) {
       await fetch(url_backend + '/api/v1/get_stock/')
         .then((response) => {
           return response.json()
         })
         .then((data) => {
-          ctx.commit('updateStock', data)
+          ctx.commit('updateStock', {'data':data, 'operation':operation})
         })
     },
     // Удаление акции смониторинга
-    async delete_stock(ctx, id) {
-      await fetch(url_backend + '/api/v1/delete_stock/' + id + '/', {
+    async delete_stock(ctx, payload) {
+      await fetch(url_backend + '/api/v1/delete_stock/' + payload.id + '/', {
         method: 'DELETE',
         mode: 'cors',
         headers: {'X-CSRFToken': getCookie('csrftoken')},
       }).then(() => {
-        ctx.dispatch('get_stock')
+        ctx.dispatch('get_stock', payload.operation)
       })
     },
   },
   mutations: {
-    updateStock(state, stocks) {
-      var new_stocks = stocks.filter(comparer(state.stock))
-
-      // changed row
-      var class_row = []
-      if (state.stock.length == stocks.length && state.stock.length != 0) {
-        console.log('changed new value', new_stocks)
-        for (var items in new_stocks) {
-          var stock_id_changea = new_stocks[items].id
-          class_row.push({class: 'info', id: stock_id_changea})
+    updateStock(state, payload) {
+      var new_stocks = payload.data.filter(comparer(state.stock))  
+      if (payload.operation != 'delete') {
+        // changed row
+        var class_row = []
+        if (state.stock.length == payload.data.length && state.stock.length != 0) {  
+          for (var items in new_stocks) {
+            var stock_id_changea = new_stocks[items].id
+            class_row.push({class: 'info', id: stock_id_changea})
+          }
+          state.stock_class_row = class_row
         }
-        state.stock_class_row = class_row
       }
-      state.stock = stocks
+      state.stock = payload.data
     },
   },
   state: {

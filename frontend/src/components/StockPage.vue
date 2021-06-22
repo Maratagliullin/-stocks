@@ -145,7 +145,7 @@ export default {
         })
         .then((value) => {
           if (value == true) {
-            this.$store.dispatch('delete_stock', stock_id)
+            this.$store.dispatch('delete_stock', {'id': stock_id, operation: 'delete'})
           }
         })
     },
