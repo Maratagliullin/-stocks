@@ -20,12 +20,12 @@
 
        <template #cell(tradingview_dentifier)="data">
         <!-- `data.value` is the value after formatted by the Formatter -->
-        <a :href="`${data.value}`">{{ data.value }}</a>
+        <a :href="`${data.value}`" target="_blank">{{ data.value }}</a>
       </template>
 
       <template #cell(investing_dentifier)="data">
         <!-- `data.value` is the value after formatted by the Formatter -->
-        <a :href="`${data.value}`">{{ data.value }}</a>
+        <a :href="`${data.value}`" target="_blank">{{ data.value }}</a>
       </template>
 
       <template #cell(actions)="row">
