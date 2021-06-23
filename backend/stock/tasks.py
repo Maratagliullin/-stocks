@@ -38,7 +38,8 @@ def get_investing_identify(self):
                 driver = webdriver.Remote(
                     command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
 
-                driver.get(url_investing)
+                driver.maximize_window()
+                driver.get(url_investing)                
                 soup_investing = BeautifulSoup(
                     driver.page_source, 'html.parser')
                 driver.quit()
@@ -95,8 +96,8 @@ def get_trading_data(self):
                 }
                 driver = webdriver.Remote(
                     command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
-
-                driver.get(tradingview_dentifier)
+                driver.maximize_window()
+                driver.get(tradingview_dentifier)  
                 # Ожидание появления данных
                 WebDriverWait(driver, 300).until(
                     text_to_change(
@@ -178,6 +179,7 @@ def get_investing_data(self):
                 driver = webdriver.Remote(
                     command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
                 source_url = investing_dentifier+'-balance-sheet'
+                driver.maximize_window()
                 driver.get(source_url)
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
                 driver.quit()
