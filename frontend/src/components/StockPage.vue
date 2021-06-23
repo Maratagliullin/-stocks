@@ -18,6 +18,16 @@
         </div>
       </template>
 
+       <template #cell(tradingview_dentifier)="data">
+        <!-- `data.value` is the value after formatted by the Formatter -->
+        <a :href="`${data.value}`">{{ data.value }}</a>
+      </template>
+
+      <template #cell(investing_dentifier)="data">
+        <!-- `data.value` is the value after formatted by the Formatter -->
+        <a :href="`${data.value}`">{{ data.value }}</a>
+      </template>
+
       <template #cell(actions)="row">
         <b-button variant="danger" size="sm" @click="showMsgBoxTwo(row.item, row.index, $event.target)">
           Удалить

@@ -5,42 +5,43 @@ from celery import task
 from celery import shared_task
 from selenium import webdriver
 from bs4 import BeautifulSoup
-from selenium.common.exceptions import WebDriverException, TimeoutException
+from celery.exceptions import MaxRetriesExceededError
+from selenium.common.exceptions import WebDriverException, TimeoutException, NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.expected_conditions import _find_element
 import json
+import re
 from django.db import transaction
 import pickle
 
-@shared_task
-def get_investing_identify():
+
+@shared_task(bind=True, default_retry_delay=5 * 60)
+def get_investing_identify(self):
     try:
-        res=[]
+        res = []
         stock_data = Stock.objects.filter(investing_dentifier__isnull=True)
         if stock_data:
             for item in stock_data:
                 stock_name = item.stock_name
                 url_investing = "https://ru.investing.com/search/?q="+stock_name+"/"
                 capabilities = {
-                    "resolution": "1920x1080",
+                    "screenResolution": "1920x1080x24",
                     "browserName": "chrome",
                     "browserVersion": "91.0",
                     "selenoid:options": {
-                        "enableVNC": False,
+                        "enableVNC": True,
                         "enableVideo": False,
+                        "sessionTimeout": "5m",
                     }
                 }
                 driver = webdriver.Remote(
                     command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
 
                 driver.get(url_investing)
-                sourse = driver.page_source
-                driver.quit()
-
                 soup_investing = BeautifulSoup(
-                    sourse, 'html.parser')
-
+                    driver.page_source, 'html.parser')
+                driver.quit()
                 search_result = soup_investing.find(
                     'a', class_='js-inner-all-results-quote-item')
                 if not search_result is None:
@@ -56,9 +57,9 @@ def get_investing_identify():
             return res
         else:
             return 'There are no search data available on investing.com'
-    except WebDriverException as e:
-        print(e, "Исключение: WebDriverException")
-        get_investing_identify.retry()
+    except (TimeoutException, NoSuchElementException, WebDriverException, Exception, MaxRetriesExceededError) as e:
+        raise self.retry(exc=e)
+   
 
 
 class text_to_change(object):
@@ -72,12 +73,10 @@ class text_to_change(object):
         return element_text != self.empty_data
 
 
-
-
 # Получние данных с tradingview.com
-@shared_task
-def get_trading_data():
-    try:    
+@shared_task(bind=True, default_retry_delay=5 * 60)
+def get_trading_data(self):
+    try:
         res = []
         stock_data = Stock.objects.filter(stock_activity=True)
         if stock_data:
@@ -85,12 +84,13 @@ def get_trading_data():
                 tradingview_dentifier = item.tradingview_dentifier
                 stock_ticker = item.stock_ticker
                 capabilities = {
-                    "resolution": "1920x1080",
+                    "screenResolution": "1920x1080x24",
                     "browserName": "chrome",
                     "browserVersion": "91.0",
                     "selenoid:options": {
-                        "enableVNC": False,
+                        "enableVNC": True,
                         "enableVideo": False,
+                        "sessionTimeout": "5m",
                     }
                 }
                 driver = webdriver.Remote(
@@ -98,7 +98,7 @@ def get_trading_data():
 
                 driver.get(tradingview_dentifier)
                 # Ожидание появления данных
-                WebDriverWait(driver, 90).until(
+                WebDriverWait(driver, 300).until(
                     text_to_change(
                         (By.CLASS_NAME, "tv-widget-fundamentals__value"), "-")
                 )
@@ -134,7 +134,7 @@ def get_trading_data():
                             stock_ticker=stock_ticker,
                             source="Tradingview",
                             source_url=tradingview_dentifier,
-                            json_value={'status':'Произошла ошибка'}
+                            json_value={'status': 'Произошла ошибка'}
                         )
                         s.save()
                     return 'Произошла ошибка'
@@ -142,18 +142,22 @@ def get_trading_data():
             return res
         else:
             return 'There are no search data available on investing.com'
-    except WebDriverException as e:
-        print(e, "Исключение: WebDriverException")
-        get_trading_data.retry()
+    except (TimeoutException, NoSuchElementException, WebDriverException, Exception, MaxRetriesExceededError) as e:
+        raise self.retry(exc=e)
+
+   
+
 
 def clear_text(row):
     return row.get_text(
     ).replace('\n', '').replace('\r', '').replace('\t', '').strip()
 
 # Получние данных с investing.com
-@shared_task
-def get_investing_data():
-    try:    
+
+
+@shared_task(bind=True, default_retry_delay=5 * 60)
+def get_investing_data(self):
+    try:
         res = []
         stock_data = Stock.objects.filter(
             stock_activity=True).exclude(investing_dentifier='Идентификатор не найден').exclude(investing_dentifier__isnull=True)
@@ -162,17 +166,17 @@ def get_investing_data():
                 investing_dentifier = item.investing_dentifier
                 stock_ticker = item.stock_ticker
                 capabilities = {
-                    "resolution": "1920x1080",
+                    "screenResolution": "1920x1080x24",
                     "browserName": "chrome",
                     "browserVersion": "91.0",
                     "selenoid:options": {
-                        "enableVNC": False,
+                        "enableVNC": True,
                         "enableVideo": False,
+                        "sessionTimeout": "5m",
                     }
                 }
                 driver = webdriver.Remote(
                     command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
-
                 source_url = investing_dentifier+'-balance-sheet'
                 driver.get(source_url)
                 soup = BeautifulSoup(driver.page_source, 'html.parser')
@@ -183,10 +187,10 @@ def get_investing_data():
                     fin_table = []
                     table_header_items = table_header.find_all('th')
                     for table_header_item in table_header_items:
-                        table_header = table_header_item.get_text().strip().replace(
-                            '\n', '/')
+                        table_header = table_header_item.get_text()
+                        table_header = re.sub(
+                            r'(^[0-9]{4})', r'\1/', table_header)
                         fin_table.append(table_header)
-
 
                     # Ищем таблицу
                     find_table = soup.find(
@@ -255,6 +259,6 @@ def get_investing_data():
             return res
         else:
             return 'There are no search data available on investing.com'
-    except WebDriverException as e:
-        print(e, "Исключение: WebDriverException")
-        get_investing_data.retry()
+    except (TimeoutException, NoSuchElementException, WebDriverException, Exception, MaxRetriesExceededError) as e:
+        raise self.retry(exc=e)
+    
