@@ -18,14 +18,17 @@
         </div>
       </template>
 
-       <template #cell(tradingview_dentifier)="data">
+      <template #cell(tradingview_dentifier)="data">
         <!-- `data.value` is the value after formatted by the Formatter -->
         <a :href="`${data.value}`" target="_blank">{{ data.value }}</a>
       </template>
 
-      <template #cell(investing_dentifier)="data">
+      <template  #cell(investing_dentifier)="data" >
         <!-- `data.value` is the value after formatted by the Formatter -->
-        <a :href="`${data.value}`" target="_blank">{{ data.value }}</a>
+        <span v-if="data.value==='Ожидается получение идентификатора' || data.value==='Идентификатор не найден'">
+        {{data.value}}
+        </span>
+        <span v-else><a :href="`${data.value}`" target="_blank">{{data.value}}</a></span>    
       </template>
 
       <template #cell(actions)="row">
@@ -95,10 +98,10 @@ export default {
     getStocks(data) {
       if (data.length > 0) {
         this.isBusy = false
-        this.data_status=''
+        this.data_status = ''
       } else if (this.getStocks.length == 0) {
         this.isBusy = false
-        this.data_status='Данные отсутствуют'
+        this.data_status = 'Данные отсутствуют'
       } else {
         this.isBusy = true
       }
@@ -155,7 +158,7 @@ export default {
         })
         .then((value) => {
           if (value == true) {
-            this.$store.dispatch('delete_stock', {'id': stock_id, operation: 'delete'})
+            this.$store.dispatch('delete_stock', {id: stock_id, operation: 'delete'})
           }
         })
     },

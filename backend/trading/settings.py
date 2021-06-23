@@ -131,13 +131,13 @@ CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_BEAT_SCHEDULE = {
-    # 'search_investing': {
-    #     'task': 'stock.tasks.get_investing_identify',
-    #     'schedule': 300
-    # },
+    'search_investing': {
+        'task': 'stock.tasks.get_investing_identify',
+        'schedule': 7200
+    },
     'search_trading': {
         'task': 'stock.tasks.get_trading_data',
-        'schedule': 3700
+        'schedule': 4200
         
     },
     'search_investing_data': {
