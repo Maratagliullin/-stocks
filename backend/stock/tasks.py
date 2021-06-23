@@ -30,7 +30,7 @@ def get_investing_identify(self):
                     "browserName": "chrome",
                     "browserVersion": "91.0",
                     "selenoid:options": {
-                        "enableVNC": True,
+                        "enableVNC": False,
                         "enableVideo": False,
                         "sessionTimeout": "5m",
                     }
@@ -89,9 +89,9 @@ def get_trading_data(self):
                     "browserName": "chrome",
                     "browserVersion": "91.0",
                     "selenoid:options": {
-                        "enableVNC": True,
+                        "enableVNC": False,
                         "enableVideo": False,
-                        "sessionTimeout": "5m",
+                        "sessionTimeout": "7m",
                     }
                 }
                 driver = webdriver.Remote(
@@ -99,7 +99,7 @@ def get_trading_data(self):
                 driver.maximize_window()
                 driver.get(tradingview_dentifier)  
                 # Ожидание появления данных
-                WebDriverWait(driver, 300).until(
+                WebDriverWait(driver, 500).until(
                     text_to_change(
                         (By.CLASS_NAME, "tv-widget-fundamentals__value"), "-")
                 )
@@ -171,7 +171,7 @@ def get_investing_data(self):
                     "browserName": "chrome",
                     "browserVersion": "91.0",
                     "selenoid:options": {
-                        "enableVNC": True,
+                        "enableVNC": False,
                         "enableVideo": False,
                         "sessionTimeout": "5m",
                     }
