@@ -1,8 +1,8 @@
 {
   "firefox": {
-    "default": "latest",
+    "default": "89.0",
     "versions": {
-      "latest": {
+      "89.0": {
         "image": "selenoid/firefox",
         "port": "4444",
         "path": "/wd/hub",
@@ -11,9 +11,9 @@
     }
   },
   "chrome": {
-    "default": "latest",
+    "default": "91.0",
     "versions": {
-      "latest": {
+      "91.0": {
         "image": "selenoid/chrome",
         "port": "4444",
         "path": "/",

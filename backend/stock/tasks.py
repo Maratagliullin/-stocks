@@ -86,8 +86,8 @@ def get_trading_data(self):
                 stock_ticker = item.stock_ticker
                 capabilities = {
                     "screenResolution": "1920x1080x24",
-                    "browserName": "chrome",
-                    "browserVersion": "91.0",
+                    "browserName": "firefox",
+                    "browserVersion": "89.0",
                     "selenoid:options": {
                         "enableVNC": False,
                         "enableVideo": False,
