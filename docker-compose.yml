@@ -42,18 +42,21 @@ services:
     image: redis
     ports:
       - '6379:6379'
+    restart: unless-stopped
 
   celery:
     <<: *BACKEND
     container_name: celery
     ports: []
     command: ["celery", "-A", "trading", "worker", "-l", "info"]
+    restart: unless-stopped
 
   celery-beat:
     <<: *BACKEND
     container_name: celery-beat
     ports: []
     command: ["celery", "-A", "trading", "beat", "-l", "info"]
+    restart: unless-stopped
 
   selenoid:
     image: aerokube/selenoid:latest-release
@@ -64,6 +67,7 @@ services:
       - './browsers.json:/etc/selenoid/browsers.json'
       - '/var/run/docker.sock:/var/run/docker.sock'
     command: ['-conf', '/etc/selenoid/browsers.json','-container-network', 'stock']
+    restart: unless-stopped
     
   selenoid-ui:
     image: "aerokube/selenoid-ui"
@@ -75,6 +79,7 @@ services:
     ports:
       - '8081:8080'
     command: ['--selenoid-uri', 'http://selenoid:4444']
+    restart: unless-stopped
 
 
 volumes:

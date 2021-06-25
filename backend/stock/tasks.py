@@ -1,20 +1,16 @@
-# Create your tasks here
-from .models import Stock
-from .models import SourceDataCompany
-from celery import task
-from celery import shared_task
-from selenium import webdriver
-from bs4 import BeautifulSoup
-from celery.exceptions import MaxRetriesExceededError
-from selenium.common.exceptions import WebDriverException, TimeoutException, NoSuchElementException
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.expected_conditions import _find_element
-import json
-import re
 from django.db import transaction
-import pickle
-
+import re
+from selenium.webdriver.support.expected_conditions import _find_element
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import WebDriverException, TimeoutException, NoSuchElementException
+from celery.exceptions import MaxRetriesExceededError
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from celery import shared_task
+from .models import SourceDataCompany
+from .models import Stock
+# Create your tasks here
 
 @shared_task(bind=True, default_retry_delay=5 * 60)
 def get_investing_identify(self):
@@ -39,7 +35,7 @@ def get_investing_identify(self):
                     command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
 
                 driver.maximize_window()
-                driver.get(url_investing)                
+                driver.get(url_investing)
                 soup_investing = BeautifulSoup(
                     driver.page_source, 'html.parser')
                 driver.quit()
@@ -60,7 +56,7 @@ def get_investing_identify(self):
             return 'There are no search data available on investing.com'
     except (TimeoutException, NoSuchElementException, WebDriverException, Exception, MaxRetriesExceededError) as e:
         raise self.retry(exc=e)
-   
+
 
 
 class text_to_change(object):
@@ -97,7 +93,7 @@ def get_trading_data(self):
                 driver = webdriver.Remote(
                     command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
                 driver.maximize_window()
-                driver.get(tradingview_dentifier)  
+                driver.get(tradingview_dentifier)
                 # Ожидание появления данных
                 WebDriverWait(driver, 500).until(
                     text_to_change(
@@ -146,7 +142,7 @@ def get_trading_data(self):
     except (TimeoutException, NoSuchElementException, WebDriverException, Exception, MaxRetriesExceededError) as e:
         raise self.retry(exc=e)
 
-   
+
 
 
 def clear_text(row):
@@ -263,4 +259,4 @@ def get_investing_data(self):
             return 'There are no search data available on investing.com'
     except (TimeoutException, NoSuchElementException, WebDriverException, Exception, MaxRetriesExceededError) as e:
         raise self.retry(exc=e)
-    
+
