@@ -66,3 +66,7 @@ table.b-table[aria-busy='true'] {
 .changed {
   animation: changed 1.5s;
 }
+
+.table-row-noactive a {
+    color: #00000069;
+}
