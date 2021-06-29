@@ -23,12 +23,14 @@
         <a :href="`${data.value}`" target="_blank">{{ data.value }}</a>
       </template>
 
-      <template  #cell(investing_dentifier)="data" >
+      <template #cell(investing_dentifier)="data">
         <!-- `data.value` is the value after formatted by the Formatter -->
-        <span v-if="data.value==='Ожидается получение идентификатора' || data.value==='Идентификатор не найден'">
-        {{data.value}}
+        <span v-if="data.value === 'Ожидается получение идентификатора' || data.value === 'Идентификатор не найден'">
+          {{ data.value }}
         </span>
-        <span v-else><a :href="`${data.value}`" target="_blank">{{data.value}}</a></span>    
+        <span v-else>
+          <a :href="`${data.value}`" target="_blank">{{ data.value }}</a>
+        </span>
       </template>
 
       <template #cell(actions)="row">
@@ -51,6 +53,7 @@ export default {
   name: 'StockPage',
   data() {
     return {
+      interval: '',
       isBusy: true,
       data_status: '',
       striped: false,
@@ -122,6 +125,9 @@ export default {
         }.bind(this),
         15000
       ))
+  },
+  beforeDestroy() {
+    clearInterval(this.interval)
   },
   methods: {
     ...mapActions(['get_stock']),
