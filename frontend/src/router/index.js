@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import StockForm from '../components/StockForm.vue'
 import Stockpage from '../components/StockPage.vue'
+import TickerPage from '../components/TickerPage.vue'
 
 Vue.use(VueRouter)
 
@@ -17,9 +18,14 @@ const routes = [
     component: StockForm,
   },
   {
-    path: '/tiker',
+    path: '/ticker',
     name: 'StockPage',
     component: Stockpage,
+  },
+  {
+    path: '/ticker/:id',
+    name: 'TickerPage',
+    component: TickerPage,
   },
 ]
 

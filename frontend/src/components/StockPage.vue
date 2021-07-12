@@ -3,6 +3,7 @@
   <div>
     <!-- {{ stockClassRow }} -->
     <b-table
+      responsive
       bordered
       :tbody-tr-class="rowClass"
       :head-variant="headVariant"
@@ -18,9 +19,17 @@
         </div>
       </template>
 
-      <template #cell(tradingview_dentifier)="data">
+       <template #cell(tradingview_dentifier)="data">
         <!-- `data.value` is the value after formatted by the Formatter -->
         <a :href="`${data.value}`" target="_blank">{{ data.value }}</a>
+      </template>
+
+      <template #cell(stock_name)="data">
+        <!-- `data.value` is the value after formatted by the Formatter -->
+        <router-link
+          :to="`ticker/${data.item.id}`">{{ data.value }}</router-link>
+
+        <!-- <a :href="`ticker/${data.item.id}`" target="_blank">{{ data.value }}</a> -->
       </template>
 
       <template #cell(investing_dentifier)="data">
@@ -34,8 +43,16 @@
       </template>
 
       <template #cell(actions)="row">
-        <b-button variant="danger" size="sm" @click="showMsgBoxTwo(row.item, row.index, $event.target)">
+        <b-button
+          v-if="row.item.stock_activity == true"
+          variant="danger"
+          size="sm"
+          @click="showMsgBoxTwo(row.item, row.index, $event.target)"
+        >
           Удалить
+        </b-button>
+        <b-button v-else variant="primary" size="sm" @click="activateTicker(row.item, row.index, $event.target)">
+          Активировать
         </b-button>
       </template>
 
@@ -92,7 +109,7 @@ export default {
             }
           },
         },
-        {key: 'actions', label: 'Удалить'},
+        {key: 'actions', label: 'Действие'},
       ],
     }
   },
@@ -144,9 +161,6 @@ export default {
       if (!item || type !== 'row') return
       if (item.stock_activity === false) return 'table-row-noactive'
     },
-    toggleBusy() {
-      this.isBusy = !this.isBusy
-    },
     showMsgBoxTwo(item) {
       var stock_name = item.stock_name
       var stock_id = item.id
@@ -167,6 +181,10 @@ export default {
             this.$store.dispatch('delete_stock', {id: stock_id, operation: 'delete'})
           }
         })
+    },
+    activateTicker(item) {
+       var stock_id = item.id
+       this.$store.dispatch('activate_stock', {id: stock_id, operation: 'activate'})
     },
   },
 }

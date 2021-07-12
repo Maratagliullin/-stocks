@@ -1,5 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
+
 import re
 import sys
 import requests
@@ -7,7 +9,8 @@ from bs4 import BeautifulSoup
 from django.http import HttpResponse
 from rest_framework.serializers import ValidationError
 from .models import Stock
-from .serializers import StockSerializer
+from .models import SourceDataCompany
+from .serializers import StockSerializer, SourceDataCompanySerializer
 from rest_framework import viewsets
 from rest_framework import status
 from django.db import transaction
@@ -139,6 +142,8 @@ class StockViews(APIView):
         serializer = StockSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    
+
      # Обработка DELETE get ticker
     def delete(self, request, id, format=None):
         with transaction.atomic():
@@ -147,6 +152,56 @@ class StockViews(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+      # Обработка DELETE get ticker
+    def put(self, request, id, format=None):
+        with transaction.atomic():
+            Stock.objects.filter(
+                id=id).update(stock_activity=True)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 def index(request):
     return HttpResponse("Hello, world.")
+
+
+@api_view(('GET',))
+def get_ticker_id(self, id):
+        queryset = Stock.objects.filter(
+            id=id)
+        serializer = StockSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+@api_view(('GET',))
+def get_ticker_data(self, ticker):
+    data = {}
+    queryset = SourceDataCompany.objects.filter(
+        stock_ticker=ticker)
+    Tradingview_data = SourceDataCompany.objects.filter(
+        stock_ticker=ticker, source='Tradingview').order_by('-date')[:1]
+    if Tradingview_data:
+        data['tradingview']={
+            'tradingview_data_json_value': Tradingview_data[0].json_value,
+            'tradingview_data_date': Tradingview_data[0].date
+        }
+    else:
+        data['tradingview'] = {
+            'tradingview_data_json_value': 'Данные отсутствуют',
+            'tradingview_data_date': 'Данные отсутствуют',
+        }
+    
+    Investing_data = SourceDataCompany.objects.filter(
+        stock_ticker=ticker, source='Investing').order_by('-date')[:1]
+   
+    if Investing_data:
+        data['investing']={
+            'investing_data_json_value': Investing_data[0].json_value,
+            'investing_data_date': Investing_data[0].date
+        }
+    else:
+        data['investing'] = {
+            'investing_data_json_value': 'Данные отсутствуют',
+            'investing_data_date': 'Данные отсутствуют',
+        }
+    return Response(data)

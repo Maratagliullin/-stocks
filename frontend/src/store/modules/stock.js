@@ -19,13 +19,39 @@ export default {
       })
     },
     // Получение всех акций
+    async getTickerByIdServer(ctx, payload) {
+      await fetch(url_backend + '/api/v1/get_stock/' + payload + '/', {
+        method: 'GET',
+        mode: 'cors',
+        headers: {'X-CSRFToken': getCookie('csrftoken')},
+      })
+        .then((response) => {
+          return response.json()
+        })
+        .then((data) => {
+          ctx.commit('updateStock', {data: data, operation: 'getTickerByIdServer'})
+        })
+    },
+    async getTickerDataByServer(ctx, payload) {
+      await fetch(url_backend + '/api/v1/get_ticker_data/' + payload + '/', {
+        method: 'GET',
+        mode: 'cors',
+        headers: {'X-CSRFToken': getCookie('csrftoken')},
+      })
+        .then((response) => {
+          return response.json()
+        })
+        .then((data) => {
+          ctx.commit('updateTickerData', data)
+        })
+    },
     async get_stock(ctx, operation) {
       await fetch(url_backend + '/api/v1/get_stock/')
         .then((response) => {
           return response.json()
         })
         .then((data) => {
-          ctx.commit('updateStock', {'data':data, 'operation':operation})
+          ctx.commit('updateStock', {data: data, operation: operation})
         })
     },
     // Удаление акции смониторинга
@@ -38,14 +64,25 @@ export default {
         ctx.dispatch('get_stock', payload.operation)
       })
     },
+    // Удаление акции смониторинга
+    async activate_stock(ctx, payload) {
+      await fetch(url_backend + '/api/v1/activate_stock/' + payload.id + '/', {
+        method: 'PUT',
+        mode: 'cors',
+        headers: {'X-CSRFToken': getCookie('csrftoken')},
+      }).then(() => {
+        ctx.dispatch('get_stock', payload.operation)
+      })
+    },
   },
   mutations: {
     updateStock(state, payload) {
-      var new_stocks = payload.data.filter(comparer(state.stock))  
-      if (payload.operation != 'delete') {
+      var new_stocks = payload.data.filter(comparer(state.stock))
+
+      if (!payload.operation === 'delete' || !payload.operation === 'activate') {
         // changed row
         var class_row = []
-        if (state.stock.length == payload.data.length && state.stock.length != 0) {  
+        if (state.stock.length == payload.data.length && state.stock.length != 0) {
           for (var items in new_stocks) {
             var stock_id_changea = new_stocks[items].id
             class_row.push({class: 'info', id: stock_id_changea})
@@ -55,14 +92,34 @@ export default {
       }
       state.stock = payload.data
     },
+    updateTickerData(state, payload) {
+      state.ticker_data = payload
+    },
   },
   state: {
     stock: [],
     stock_class_row: [],
+    ticker_data: [],
+    ticker_name: '',
   },
   getters: {
+    getTickerByIdState: (state) => (id) => {
+      return state.stock.find((ticker) => ticker.id === id)
+    },
+    getTickerNameByState: (state) => (id) => {
+      console.log('getTickerNameByState')
+      var ticker = state.stock.find((ticker) => ticker.id === id)
+      console.log(ticker)
+      return ticker.stock_ticker
+    },
+    getTickerNameByServer(state) {
+      return state.ticker_name
+    },
     getStocks(state) {
       return state.stock
+    },
+    getTickerData(state) {
+      return state.ticker_data
     },
     getStocksCount(state) {
       return state.stock.length

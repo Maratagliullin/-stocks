@@ -1,10 +1,10 @@
 <template>
   <div id="app">
-    <div class="container">
+    <div class="container-fluid">
       <div id="nav">
         <router-link to="/">Главная</router-link>
         |
-        <router-link to="/tiker">Акции</router-link>
+        <router-link to="/ticker">Акции</router-link>
       </div>
       <router-view />
     </div>
