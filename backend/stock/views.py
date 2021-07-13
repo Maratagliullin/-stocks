@@ -81,7 +81,7 @@ class StockViews(APIView):
             # Извлекаем тикеры
             tickers = []
             data = request.data['stock'].split('\n')
-            saved_tiker=[]
+            saved_tiker = []
             for stock_ticker in data:
                 if stock_ticker:
                     ticker_status = self.get_tiker_status(stock_ticker)
@@ -114,7 +114,7 @@ class StockViews(APIView):
                                 )
                                 s.save()
                                 print(s.stock_name)
-                                
+
                             # Проверка на сохранение в базе?
                             if(s.pk):
                                 saved_tiker.append(s.pk)
@@ -125,8 +125,8 @@ class StockViews(APIView):
             if saved_tiker:
                 print(saved_tiker)
                 get_investing_identify.apply_async(
-                countdown=30)
-            
+                    countdown=30)
+
             if not tickers:
                 raise ValidationError(
                     [{'status': 'empty_value', 'message': 'Идентификаторы акции должны быть заполнены'}])
@@ -142,9 +142,8 @@ class StockViews(APIView):
         serializer = StockSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    
-
      # Обработка DELETE get ticker
+
     def delete(self, request, id, format=None):
         with transaction.atomic():
             Stock.objects.filter(
@@ -167,10 +166,10 @@ def index(request):
 
 @api_view(('GET',))
 def get_ticker_id(self, id):
-        queryset = Stock.objects.filter(
-            id=id)
-        serializer = StockSerializer(queryset, many=True)
-        return Response(serializer.data)
+    queryset = Stock.objects.filter(
+        id=id)
+    serializer = StockSerializer(queryset, many=True)
+    return Response(serializer.data)
 
 
 @api_view(('GET',))
@@ -181,23 +180,23 @@ def get_ticker_data(self, ticker):
     Tradingview_data = SourceDataCompany.objects.filter(
         stock_ticker=ticker, source='Tradingview').order_by('-date')[:1]
     if Tradingview_data:
-        data['tradingview']={
+        data['tradingview'] = {
             'tradingview_data_json_value': Tradingview_data[0].json_value,
-            'tradingview_data_date': Tradingview_data[0].date
+            'tradingview_data_date': Tradingview_data[0].date.strftime("%d/%m/%Y %H:%M:%S")
         }
     else:
         data['tradingview'] = {
             'tradingview_data_json_value': 'Данные отсутствуют',
             'tradingview_data_date': 'Данные отсутствуют',
         }
-    
+
     Investing_data = SourceDataCompany.objects.filter(
         stock_ticker=ticker, source='Investing').order_by('-date')[:1]
-   
+
     if Investing_data:
-        data['investing']={
+        data['investing'] = {
             'investing_data_json_value': Investing_data[0].json_value,
-            'investing_data_date': Investing_data[0].date
+            'investing_data_date': Investing_data[0].date.strftime("%d/%m/%Y %H:%M:%S")
         }
     else:
         data['investing'] = {
