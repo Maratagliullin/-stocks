@@ -24,9 +24,10 @@
     </div>
     <div>
       <b>Данные tradingview.com:</b>
-      <br>
-      <b>Дата:{{tradingview_date }}</b>
-      <textarea
+      <br />
+     <b>Дата:{{getTickerData.tradingview.tradingview_data_date }}</b>
+      <pre>{{getTickerData.tradingview.tradingview_data_json_value}}</pre>
+      <!-- <textarea
         v-model="tradingview_json"
         rows="5"
         cols="3"
@@ -35,14 +36,15 @@
         class="form-control"
         id="stock"
         placeholder=""
-      ></textarea>
+      ></textarea>-->
     </div>
     <div>
       <b>Данные investing.com:</b>
       <br>
-      <b>Дата:{{ investing_date }}</b>
-      <textarea
-        v-model="investing_json"
+      <b>Дата:{{getTickerData.investing.investing_data_date }}</b>
+       <pre>{{getTickerData.investing.investing_data_json_value }}</pre>
+      <!-- <textarea
+        v-model="getTickerData.investing_json"
         rows="4"
         cols="3"
         name="stock"
@@ -50,7 +52,8 @@
         class="form-control"
         id="stock"
         placeholder=""
-      ></textarea>
+      ></textarea> -->
+    
     </div>
   </div>
 </template>
@@ -76,9 +79,9 @@ export default {
     getTicker() {
       var id = this.$route.params.id
       if (this.getStocks.length != 0) {
-        return this.getTickerByIdState(Number(id))
+      return this.getTickerByIdState(Number(id))
       } else {
-        return this.getTickerByIdServer(Number(id))
+        return  this.getTickerByIdServer(Number(id))
       }
     },
 
@@ -88,32 +91,44 @@ export default {
         return this.getTickerNameByState(Number(id))
       },
     },
-    investing_json: {
-      get: function() {
-        return  JSON.stringify(this.getTickerData.investing.investing_data_json_value)
-      },
-    },
-     tradingview_json: {
-      get: function() {
-        return  JSON.stringify(this.getTickerData.tradingview.tradingview_data_json_value)
-      },
-    },
-    tradingview_date: {
-      get: function() {
-        return this.getTickerData.tradingview.tradingview_data_date
-      },
-    },
-    investing_date: {
-      get: function() {
-        return  this.getTickerData.investing.investing_data_date
-      },
-    },
+    
+    //  tradingview_json: {
+    //   get: function() {
+    //     return  JSON.stringify(this.getTickerData.tradingview.tradingview_data_json_value)
+    //   },
+    // },
+    // tradingview_date: {
+    //   get: function() {
+    //     return  JSON.stringify(this.getTickerData.tradingview.tradingview_data_date)
+    //   },
+    // },
+    // investing_date: {
+    //   get: function() {
+    //     return   JSON.stringify(this.getTickerData.investing.investing_data_date)
+    //   },
+    // },
+  },
+  async mounted() {
+    var id = this.$route.params.id
+    this.getTickerByIdServer(Number(id)).then(() => {
+      this.getTickerDataByServer(this.getTickeByServer).then(() => {
+        console.log("3")
+        
+
+      })
+    })
   },
   methods: {
     ...mapActions(['getTickerByIdServer', 'getTickerDataByServer']),
   },
-  created() {
-    this.getTickerDataByServer(this.getTickeByServer)
-  },
+
+  // created() {
+  //   var id = this.$route.params.id
+  //   this.getTickerByIdServer(Number(id)).then(() => {
+  //     // if (this.getStocks.length != 0) {
+  //     this.getTickerDataByServer(this.getTickeByServer)
+  //   })
+  //   //
+  // },
 }
 </script>

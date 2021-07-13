@@ -20,7 +20,8 @@ export default {
     },
     // Получение всех акций
     async getTickerByIdServer(ctx, payload) {
-      await fetch(url_backend + '/api/v1/get_stock/' + payload + '/', {
+       return new Promise(function(resolve) { 
+      fetch(url_backend + '/api/v1/get_stock/' + payload + '/', {
         method: 'GET',
         mode: 'cors',
         headers: {'X-CSRFToken': getCookie('csrftoken')},
@@ -30,7 +31,10 @@ export default {
         })
         .then((data) => {
           ctx.commit('updateStock', {data: data, operation: 'getTickerByIdServer'})
+          console.log('1')
+          resolve()
         })
+      })
     },
     async getTickerDataByServer(ctx, payload) {
       await fetch(url_backend + '/api/v1/get_ticker_data/' + payload + '/', {
@@ -42,6 +46,7 @@ export default {
           return response.json()
         })
         .then((data) => {
+            console.log('2')
           ctx.commit('updateTickerData', data)
         })
     },
@@ -93,6 +98,7 @@ export default {
       state.stock = payload.data
     },
     updateTickerData(state, payload) {
+      console.log(payload)
       state.ticker_data = payload
     },
   },
@@ -104,12 +110,15 @@ export default {
   },
   getters: {
     getTickerByIdState: (state) => (id) => {
-      return state.stock.find((ticker) => ticker.id === id)
+      console.log(state)
+      var ticker = state.stock.find((ticker) => ticker.id === id)
+      console.log('ticker',ticker)
+      return ticker
+
     },
     getTickerNameByState: (state) => (id) => {
-      console.log('getTickerNameByState')
       var ticker = state.stock.find((ticker) => ticker.id === id)
-      console.log(ticker)
+      
       return ticker.stock_ticker
     },
     getTickerNameByServer(state) {
