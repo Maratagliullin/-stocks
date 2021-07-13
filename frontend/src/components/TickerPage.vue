@@ -22,11 +22,12 @@
       <b>Тикер:</b>
       {{ getTicker.stock_ticker }}
     </div>
+    <div  v-if="getTickerData">
     <div>
       <b>Данные tradingview.com:</b>
       <br />
-     <b>Дата:{{getTickerData.tradingview.tradingview_data_date }}</b>
-      <pre>{{getTickerData.tradingview.tradingview_data_json_value}}</pre>
+     <b v-if="getTickerData.tradingview">Дата:{{getTickerData.tradingview.tradingview_data_date }}</b>
+      <pre v-if="getTickerData.tradingview">{{getTickerData.tradingview.tradingview_data_json_value}}</pre>
       <!-- <textarea
         v-model="tradingview_json"
         rows="5"
@@ -41,8 +42,8 @@
     <div>
       <b>Данные investing.com:</b>
       <br>
-      <b>Дата:{{getTickerData.investing.investing_data_date }}</b>
-       <pre>{{getTickerData.investing.investing_data_json_value }}</pre>
+      <b v-if="getTickerData.investing">Дата:{{getTickerData.investing.investing_data_date }}</b>
+       <pre v-if="getTickerData.investing">{{getTickerData.investing.investing_data_json_value }}</pre>
       <!-- <textarea
         v-model="getTickerData.investing_json"
         rows="4"
@@ -54,6 +55,7 @@
         placeholder=""
       ></textarea> -->
     
+    </div>
     </div>
   </div>
 </template>
@@ -108,27 +110,25 @@ export default {
     //   },
     // },
   },
-  async mounted() {
-    var id = this.$route.params.id
-    this.getTickerByIdServer(Number(id)).then(() => {
-      this.getTickerDataByServer(this.getTickeByServer).then(() => {
-        console.log("3")
+  // async mounted() {
+  //   var id = this.$route.params.id
+  //   this.getTickerByIdServer(Number(id)).then(() => {
+  //     this.getTickerDataByServer(this.getTickeByServer).then(() => {
+  //       console.log("3")
         
 
-      })
-    })
-  },
+  //     })
+  //   })
+  // },
   methods: {
     ...mapActions(['getTickerByIdServer', 'getTickerDataByServer']),
   },
 
-  // created() {
-  //   var id = this.$route.params.id
-  //   this.getTickerByIdServer(Number(id)).then(() => {
-  //     // if (this.getStocks.length != 0) {
-  //     this.getTickerDataByServer(this.getTickeByServer)
-  //   })
-  //   //
-  // },
+  created() {
+    var id = this.$route.params.id
+    this.getTickerByIdServer(Number(id)).then(() => {
+      this.getTickerDataByServer(this.getTickeByServer)
+    })
+  },
 }
 </script>
