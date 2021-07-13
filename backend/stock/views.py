@@ -18,7 +18,8 @@ from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import WebDriverWait
 from .tasks import get_investing_identify
-
+from django.utils import timezone
+tz = timezone.get_default_timezone()
 
 class StockViews(APIView):
 
@@ -182,7 +183,7 @@ def get_ticker_data(self, ticker):
     if Tradingview_data:
         data['tradingview'] = {
             'tradingview_data_json_value': Tradingview_data[0].json_value,
-            'tradingview_data_date': Tradingview_data[0].date.strftime("%d/%m/%Y %H:%M:%S")
+            'tradingview_data_date': Tradingview_data[0].date.astimezone(tz).strftime("%d/%m/%Y %H:%M:%S")
         }
     else:
         data['tradingview'] = {
@@ -196,7 +197,7 @@ def get_ticker_data(self, ticker):
     if Investing_data:
         data['investing'] = {
             'investing_data_json_value': Investing_data[0].json_value,
-            'investing_data_date': Investing_data[0].date.strftime("%d/%m/%Y %H:%M:%S")
+            'investing_data_date': Investing_data[0].date.astimezone(tz).strftime("%d/%m/%Y %H:%M:%S")
         }
     else:
         data['investing'] = {
