@@ -30,23 +30,28 @@ export default {
             return response.json()
           })
           .then((data) => {
+            console.log('action getTickerByIdServer')
             ctx.commit('updateStock', {data: data, operation: 'getTickerByIdServer'})
             resolve()
           })
       })
     },
     async getTickerDataByServer(ctx, payload) {
-      await fetch(url_backend + '/api/v1/get_ticker_data/' + payload + '/', {
-        method: 'GET',
-        mode: 'cors',
-        headers: {'X-CSRFToken': getCookie('csrftoken')},
+      return new Promise(function(resolve) {
+        fetch(url_backend + '/api/v1/get_ticker_data/' + payload + '/', {
+          method: 'GET',
+          mode: 'cors',
+          headers: {'X-CSRFToken': getCookie('csrftoken')},
+        })
+          .then((response) => {
+            return response.json()
+          })
+          .then((data) => {
+            console.log('action getTickerDataByServer')
+            ctx.commit('updateTickerData', data)
+            resolve()
+          })
       })
-        .then((response) => {
-          return response.json()
-        })
-        .then((data) => {
-          ctx.commit('updateTickerData', data)
-        })
     },
     async get_stock(ctx, operation) {
       await fetch(url_backend + '/api/v1/get_stock/')
@@ -108,35 +113,41 @@ export default {
   getters: {
     getTickerByIdState: (state) => (id) => {
       var ticker = state.stock.find((ticker) => ticker.id === id)
+      console.log('getters getTickerByIdState', ticker)
       return ticker
     },
     getTickerNameByState: (state) => (id) => {
       var ticker = state.stock.find((ticker) => ticker.id === id)
+      console.log('getters getTickerNameByState', ticker.stock_ticker)
       return ticker.stock_ticker
     },
     getTickerNameByServer(state) {
+      console.log('getters getTickerNameByServer', state.ticker_name)
       return state.ticker_name
     },
     getTickerDataJsonInvesting(state) {
-      if (state.ticker_data.length != 0) {
-        console.log('getTickerDataJsonInvesting', state.ticker_data)
-        return JSON.stringify(state.ticker_data.investing.investing_data_json_value)
-      }
+      console.log('getter getTickerDataJsonInvesting', state.ticker_data)
+      return JSON.stringify(state.ticker_data.investing.investing_data_json_value)
+    },
+    getTickerDataDateInvesting(state) {
+      console.log('getter getTickerDataDateInvesting', state.ticker_data)
+      return JSON.stringify(state.ticker_data.investing.investing_data_date)
+    },
+    getTickerDataDateTradingview(state) {
+      console.log('getter getTickerDataDateTradingview', state.ticker_data)
+      return JSON.stringify(state.ticker_data.tradingview.tradingview_data_date)
     },
     getTickerDataJsonTradingview(state) {
-      if (state.ticker_data.length != 0) {
-        console.log('getTickerDataJsontradingview', state.ticker_data)
-        return JSON.stringify(state.ticker_data.tradingview.tradingview_data_json_value)
-      }
+      console.log('getter getTickerDataJsontradingview', state.ticker_data)
+      return JSON.stringify(state.ticker_data.tradingview.tradingview_data_json_value)
     },
     getStocks(state) {
+      console.log('getter getStocks', state.stock)
       return state.stock
     },
     getTickerData(state) {
-      if (state.ticker_data.length != 0) {
-      console.log('getTickerData', state.ticker_data)
+      console.log('getter getTickerData', state.ticker_data)
       return state.ticker_data
-    }
     },
     getStocksCount(state) {
       return state.stock.length

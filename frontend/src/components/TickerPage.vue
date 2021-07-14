@@ -1,59 +1,68 @@
 <template>
   <div>
-    <!-- <div id="nav"><router-link to="/ticker">Вернуться к списку акций</router-link></div> -->
-    <h5>{{ getTicker.stock_name }}</h5>
+    <h5 v-if="getTicker.stock_sector">{{ getTicker.stock_name }}</h5>
+    <h5 v-else>Данные отсутсвуют</h5>
+
     <div>
-      <b>Сектор:</b>
-      {{ getTicker.stock_sector }}
+      <b>Сектор: </b>
+      <span v-if="getTicker.stock_sector">{{ getTicker.stock_sector }}</span>
+      <span v-else>Данные отсутсвуют</span>
     </div>
     <div>
-      <b>Индустрия:</b>
-      {{ getTicker.stock_industry }}
+      <b>Индустрия: </b>
+      <span v-if="getTicker.stock_industry">{{ getTicker.stock_industry }}</span>
+      <span v-else>Данные отсутсвуют</span>
     </div>
     <div>
-      <b>Идентификатор investing.com:</b>
-      {{ getTicker.investing_dentifier }}
+      <b>Идентификатор investing.com: </b>
+      <span v-if="getTicker.investing_dentifier">{{ getTicker.investing_dentifier }}</span>
+      <span v-else>Данные отсутсвуют</span>
     </div>
     <div>
-      <b>Идентификатор tradingview.com:</b>
-      {{ getTicker.tradingview_dentifier }}
+      <b>Идентификатор tradingview.com: </b>
+      <span v-if="getTicker.tradingview_dentifier">{{ getTicker.tradingview_dentifier }}</span>
+      <span v-else>Данные отсутсвуют</span>
     </div>
     <div>
-      <b>Тикер:</b>
-      {{ getTicker.stock_ticker }}
+      <b>Тикер: </b>
+      <span v-if="getTicker.stock_ticker">{{ getTicker.stock_ticker }}</span>
+      <span v-else>Данные отсутсвуют</span>
     </div>
-    <div  v-if="getTickerData">
-    <div>
-      <b>Данные tradingview.com:</b>
-      <br />
-     <b v-if="getTickerData.tradingview">Дата: {{getTickerData.tradingview.tradingview_data_date }}</b>
-      <textarea v-if="getTickerData.tradingview"
-        v-model="getTickerDataJsonTradingviewGetter"
-        rows="5"
-        cols="3"
-        name="stock"
-        type="text"
-        class="form-control"
-        id="stock"
-        placeholder=""
-      ></textarea>
+    <div class="mt-3">
+      <b-form-group label="Данные tradingview.com:" label-for="textarea-formatter">
+        <b-form-textarea
+          v-model="getTickerDataJsonTradingview"
+          rows="5"
+          cols="3"
+          name="stock"
+          type="text"
+          class="form-control"
+          id="stock"
+          placeholder=""
+        ></b-form-textarea>
+      </b-form-group>
+      <p style="white-space: pre-line">
+        <b>Дата: </b>
+        {{ getTickerDataDateTradingview }}
+      </p>
     </div>
-    <div>
-      <b>Данные investing.com:</b>
-      <br>
-      <b v-if="getTickerData.investing">Дата: {{getTickerData.investing.investing_data_date }}</b>
-      <textarea
-        v-model="getTickerDataJsonInvestingGetter"
-        rows="4"
-        cols="3"
-        name="stock"
-        type="text"
-        class="form-control"
-        id="stock"
-        placeholder=""
-      ></textarea>
-    
-    </div>
+    <div class="mt-3">
+      <b-form-group label="Данные investing.com:" label-for="textarea-formatter">
+        <b-form-textarea
+          v-model="getTickerDataJsonInvesting"
+          rows="4"
+          cols="3"
+          name="stock"
+          type="text"
+          class="form-control"
+          id="stock"
+          placeholder=""
+        ></b-form-textarea>
+      </b-form-group>
+      <p style="white-space: pre-line">
+        <b>Дата: </b>
+        {{ getTickerDataDateInvesting }}
+      </p>
     </div>
   </div>
 </template>
@@ -61,48 +70,42 @@
 <script>
 import {mapGetters, mapActions} from 'vuex'
 export default {
-  filters: {
-    pretty: function(value) {
-      return JSON.stringify(JSON.parse(value), null, 2)
-    },
+  data: function() {
+    return {
+      getTicker: {},
+      getTickerDataDateInvesting: 'Данные отсутсвуют',
+      getTickerDataJsonInvesting: 'Данные отсутсвуют',
+      getTickerDataDateTradingview: 'Данные отсутсвуют',
+      getTickerDataJsonTradingview: 'Данные отсутсвуют',
+    }
   },
   name: 'TickerPage',
 
   computed: {
     ...mapGetters({
-      getStocks: 'getStocks',
       getTickerByIdState: 'getTickerByIdState',
       getTickerNameByState: 'getTickerNameByState',
-      getTickerData: 'getTickerData',
-      getTickerDataJsonInvestingGetter:'getTickerDataJsonInvesting',
-      getTickerDataJsonTradingviewGetter:'getTickerDataJsonTradingview'
     }),
 
-    getTicker() {
+    getTickeByServer() {
       var id = this.$route.params.id
-      if (this.getStocks.length != 0) {
-      return this.getTickerByIdState(Number(id))
-      } else {
-        return  this.getTickerByIdServer(Number(id))
-      }
+      return this.getTickerNameByState(Number(id))
     },
-
-    getTickeByServer: {
-      get: function() {
-        var id = this.$route.params.id
-        return this.getTickerNameByState(Number(id))
-      },
-    },
-    
   },
   methods: {
     ...mapActions(['getTickerByIdServer', 'getTickerDataByServer']),
   },
-
   created() {
+    console.log('created')
     var id = this.$route.params.id
     this.getTickerByIdServer(Number(id)).then(() => {
-      this.getTickerDataByServer(this.getTickeByServer)
+      this.getTicker = this.getTickerByIdState(Number(id))
+      this.getTickerDataByServer(this.getTickeByServer).then(() => {
+        this.getTickerDataDateInvesting = this.$store.getters.getTickerDataDateInvesting
+        this.getTickerDataJsonInvesting = this.$store.getters.getTickerDataJsonInvesting
+        this.getTickerDataDateTradingview = this.$store.getters.getTickerDataDateTradingview
+        this.getTickerDataJsonTradingview = this.$store.getters.getTickerDataJsonTradingview
+      })
     })
   },
 }
