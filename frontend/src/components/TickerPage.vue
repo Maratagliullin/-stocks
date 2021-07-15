@@ -1,31 +1,31 @@
 <template>
   <div>
-    <h5 v-if="getTicker.stock_sector">{{ getTicker.stock_name }}</h5>
+    <h5 v-if="getTicker">{{ getTicker.stock_name }}</h5>
     <h5 v-else>Данные отсутсвуют</h5>
 
     <div>
       <b>Сектор: </b>
-      <span v-if="getTicker.stock_sector">{{ getTicker.stock_sector }}</span>
+      <span v-if="getTicker">{{ getTicker.stock_sector }}</span>
       <span v-else>Данные отсутсвуют</span>
     </div>
     <div>
       <b>Индустрия: </b>
-      <span v-if="getTicker.stock_industry">{{ getTicker.stock_industry }}</span>
+      <span v-if="getTicker">{{ getTicker.stock_industry }}</span>
       <span v-else>Данные отсутсвуют</span>
     </div>
     <div>
       <b>Идентификатор investing.com: </b>
-      <span v-if="getTicker.investing_dentifier">{{ getTicker.investing_dentifier }}</span>
+      <span v-if="getTicker">{{ getTicker.investing_dentifier }}</span>
       <span v-else>Данные отсутсвуют</span>
     </div>
     <div>
       <b>Идентификатор tradingview.com: </b>
-      <span v-if="getTicker.tradingview_dentifier">{{ getTicker.tradingview_dentifier }}</span>
+      <span v-if="getTicker">{{ getTicker.tradingview_dentifier }}</span>
       <span v-else>Данные отсутсвуют</span>
     </div>
     <div>
       <b>Тикер: </b>
-      <span v-if="getTicker.stock_ticker">{{ getTicker.stock_ticker }}</span>
+      <span v-if="getTicker">{{ getTicker.stock_ticker }}</span>
       <span v-else>Данные отсутсвуют</span>
     </div>
     <div class="mt-3">
@@ -72,7 +72,6 @@ import {mapGetters, mapActions} from 'vuex'
 export default {
   data: function() {
     return {
-      getTicker: {},
       getTickerDataDateInvesting: 'Данные отсутсвуют',
       getTickerDataJsonInvesting: 'Данные отсутсвуют',
       getTickerDataDateTradingview: 'Данные отсутсвуют',
@@ -83,10 +82,13 @@ export default {
 
   computed: {
     ...mapGetters({
-      getTickerByIdState: 'getTickerByIdState',
       getTickerNameByState: 'getTickerNameByState',
     }),
 
+    getTicker() {
+      var id = this.$route.params.id
+      return this.$store.getters.getTickerByIdState(Number(id))
+    },
     getTickeByServer() {
       var id = this.$route.params.id
       return this.getTickerNameByState(Number(id))
@@ -99,7 +101,6 @@ export default {
     console.log('created')
     var id = this.$route.params.id
     this.getTickerByIdServer(Number(id)).then(() => {
-      this.getTicker = this.getTickerByIdState(Number(id))
       this.getTickerDataByServer(this.getTickeByServer).then(() => {
         this.getTickerDataDateInvesting = this.$store.getters.getTickerDataDateInvesting
         this.getTickerDataJsonInvesting = this.$store.getters.getTickerDataJsonInvesting
