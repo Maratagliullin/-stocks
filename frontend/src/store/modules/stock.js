@@ -19,7 +19,7 @@ export default {
       })
     },
     // Получение всех акций
-    async getTickerByIdServer(ctx, payload) {
+    async getTickerByTickerNameServer(ctx, payload) {
       return new Promise(function(resolve) {
         fetch(url_backend + '/api/v1/get_stock/' + payload + '/', {
           method: 'GET',
@@ -30,7 +30,7 @@ export default {
             return response.json()
           })
           .then((data) => {
-            console.log('action getTickerByIdServer')
+            console.log('action getTickerByTickerNameServer')
             ctx.commit('updateStock', {data: data, operation: 'getTickerByIdServer'})
             resolve()
           })
@@ -111,15 +111,10 @@ export default {
     ticker_name: '',
   },
   getters: {
-    getTickerByIdState: (state) => (id) => {
-      var ticker = state.stock.find((ticker) => ticker.id === id)
-      console.log('getters getTickerByIdState', ticker)
+    getTickerByTickerNameState: (state) => (id) => {
+      var ticker = state.stock.find((ticker) => ticker.stock_ticker === id)
+      console.log('getters getTickerByTickerNameState', ticker)
       return ticker
-    },
-    getTickerNameByState: (state) => (id) => {
-      var ticker = state.stock.find((ticker) => ticker.id === id)
-      console.log('getters getTickerNameByState', ticker.stock_ticker)
-      return ticker.stock_ticker
     },
     getTickerNameByServer(state) {
       console.log('getters getTickerNameByServer', state.ticker_name)

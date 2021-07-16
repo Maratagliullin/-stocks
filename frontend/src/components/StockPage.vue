@@ -27,7 +27,7 @@
       <template #cell(stock_name)="data">
         <!-- `data.value` is the value after formatted by the Formatter -->
         <router-link
-          :to="`ticker/${data.item.id}`">{{ data.value }}</router-link>
+          :to="`ticker/${data.item.stock_ticker}`">{{ data.value }}</router-link>
 
         <!-- <a :href="`ticker/${data.item.id}`" target="_blank">{{ data.value }}</a> -->
       </template>

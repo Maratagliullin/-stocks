@@ -87,21 +87,18 @@ export default {
 
     getTicker() {
       var id = this.$route.params.id
-      return this.$store.getters.getTickerByIdState(Number(id))
+      return this.$store.getters.getTickerByTickerNameState(String(id))
     },
-    getTickeByServer() {
-      var id = this.$route.params.id
-      return this.getTickerNameByState(Number(id))
-    },
+    
   },
   methods: {
-    ...mapActions(['getTickerByIdServer', 'getTickerDataByServer']),
+    ...mapActions(['getTickerByTickerNameServer', 'getTickerDataByServer']),
   },
   created() {
     console.log('created')
     var id = this.$route.params.id
-    this.getTickerByIdServer(Number(id)).then(() => {
-      this.getTickerDataByServer(this.getTickeByServer).then(() => {
+    this.getTickerByTickerNameServer(String(id)).then(() => {
+      this.getTickerDataByServer(String(id)).then(() => {
         this.getTickerDataDateInvesting = this.$store.getters.getTickerDataDateInvesting
         this.getTickerDataJsonInvesting = this.$store.getters.getTickerDataJsonInvesting
         this.getTickerDataDateTradingview = this.$store.getters.getTickerDataDateTradingview

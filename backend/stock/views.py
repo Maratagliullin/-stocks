@@ -21,6 +21,7 @@ from .tasks import get_investing_identify
 from django.utils import timezone
 tz = timezone.get_default_timezone()
 
+
 class StockViews(APIView):
 
     # Поиск текста в теге ниже после регульярного выражения
@@ -166,9 +167,10 @@ def index(request):
 
 
 @api_view(('GET',))
-def get_ticker_id(self, id):
+def get_ticker_id(self, ticker):
+    print(id)
     queryset = Stock.objects.filter(
-        id=id)
+        stock_ticker=ticker)
     serializer = StockSerializer(queryset, many=True)
     return Response(serializer.data)
 
