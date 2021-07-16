@@ -54,12 +54,11 @@
         <b-button v-else variant="primary" size="sm" @click="activateTicker(row.item, row.index, $event.target)">
           Активировать
         </b-button>
-      </template>
-
-      <template v-if="getStocks.length" #table-caption>
+      </template>     
+    </b-table>
+     <template v-if="getStocks.length">
         <p class="float-right">Итого: {{ getStocksCount }}</p>
       </template>
-    </b-table>
     <div style="text-align:center;">{{ data_status }}</div>
   </div>
 </template>
