@@ -21,3 +21,5 @@ frontend/stock/src/views/Home.vue
 frontend/stock/src/views/About.vue
 frontend/stock/src/components/BootstrapToast.vue
 ghostdriver.log
+.gitlab-ci.yml
+.env.gpg
