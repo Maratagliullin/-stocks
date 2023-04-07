@@ -60,12 +60,14 @@ services:
     command: npm run serve
     depends_on:
       - backend
+    environment:
+      - NODE_OPTIONS=--openssl-legacy-provider
   
   # pgadmin:
   #   image: dpage/pgadmin4
   #   restart: unless-stopped
   #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: marat.agl@gmail.com
+  #     PGADMIN_DEFAULT_EMAIL: test@test.ru
   #     PGADMIN_DEFAULT_PASSWORD: Admin
   #   ports:
   #     - "8082:80"

@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Stock
-from .models import SourceDataCompany
+
+from .models import SourceDataCompany, Stock
 
 
 class StockSerializer(serializers.ModelSerializer):

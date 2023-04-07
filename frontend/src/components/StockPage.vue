@@ -49,9 +49,9 @@
           size="sm"
           @click="showMsgBoxTwo(row.item, row.index, $event.target)"
         >
-          Удалить
+          Деактивировать
         </b-button>
-        <b-button v-else variant="primary" size="sm" @click="activateTicker(row.item, row.index, $event.target)">
+        <b-button v-else variant="success" size="sm" @click="activateTicker(row.item, row.index, $event.target)">
           Активировать
         </b-button>
       </template>     

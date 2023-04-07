@@ -1,16 +1,26 @@
-from django.db import transaction
 import re
-from selenium.webdriver.support.expected_conditions import _find_element
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import WebDriverException, TimeoutException, NoSuchElementException
-from celery.exceptions import MaxRetriesExceededError
+
+import requests
+
 from bs4 import BeautifulSoup
-from selenium import webdriver
 from celery import shared_task
-from .models import SourceDataCompany
-from .models import Stock
-# Create your tasks here
+from celery.exceptions import MaxRetriesExceededError
+from django.db import transaction
+from selenium import webdriver
+from selenium.common.exceptions import (NoSuchElementException,
+                                        TimeoutException, WebDriverException)
+from selenium.webdriver.support.expected_conditions import _find_element
+
+from .models import SourceDataCompany, Stock
+
+
+def get_data_by_regex_trading(regexp, soup):
+    match_string = soup.find('div', text=re.compile(r'\b{}'.format(regexp)))
+    if not match_string is None:
+        return match_string.find_next('div', class_=re.compile('value-.*')).text.strip()
+    else:
+        return "Данные отсутсвуют"
+
 
 @shared_task(bind=True, default_retry_delay=5 * 60)
 def get_investing_identify(self):
@@ -32,7 +42,8 @@ def get_investing_identify(self):
                     }
                 }
                 driver = webdriver.Remote(
-                    command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
+                    command_executor='http://selenoid:4444/wd/hub',
+                    desired_capabilities=capabilities)
 
                 driver.maximize_window()
                 driver.get(url_investing)
@@ -54,9 +65,11 @@ def get_investing_identify(self):
             return res
         else:
             return 'There are no search data available on investing.com'
-    except (TimeoutException, NoSuchElementException, WebDriverException, Exception, MaxRetriesExceededError) as e:
+    except (TimeoutException,
+            NoSuchElementException,
+            WebDriverException, Exception,
+            MaxRetriesExceededError) as e:
         raise self.retry(exc=e)
-
 
 
 class text_to_change(object):
@@ -71,55 +84,73 @@ class text_to_change(object):
 
 
 # Получние данных с tradingview.com
-@shared_task(bind=True, default_retry_delay=5 * 60)
+@shared_task(bind=True)
 def get_trading_data(self):
     try:
         res = []
-        stock_data = Stock.objects.filter(stock_activity=True)
+        stock_data = Stock.objects.filter(
+            stock_activity=True)
         if stock_data:
             for item in stock_data:
                 tradingview_dentifier = item.tradingview_dentifier
-                stock_ticker = item.stock_ticker
-                capabilities = {
-                    "screenResolution": "1920x1080x24",
-                    "browserName": "firefox",
-                    "browserVersion": "89.0",
-                    "selenoid:options": {
-                        "enableVNC": False,
-                        "enableVideo": False,
-                        "sessionTimeout": "7m",
-                    }
-                }
-                driver = webdriver.Remote(
-                    command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
-                driver.maximize_window()
-                driver.get(tradingview_dentifier)
-                # Ожидание появления данных
-                WebDriverWait(driver, 500).until(
-                    text_to_change(
-                        (By.CLASS_NAME, "tv-widget-fundamentals__value"), "-")
-                )
-                soup = BeautifulSoup(driver.page_source, 'html.parser')
-                driver.quit()
+                response_tradingview = requests.get(tradingview_dentifier)
+                soup = BeautifulSoup(response_tradingview.text, 'html.parser')
                 data = {}
-                tags_main = soup.find_all(
-                    'div', attrs={'class': 'tv-widget-fundamentals__item'})
+
+                tags_main = soup.find(
+                    'h1').getText()
                 if not tags_main is None:
-                    for tag in tags_main:
-                        title = tag.find('div', attrs={'class': 'tv-widget-fundamentals__title'}).get_text(
-                        ).replace('\n', '').replace('\r', '').replace('\t', '')
-                        data_inside = {}
-                        for tag_inner in tag.findAll('div', attrs={'class': 'tv-widget-fundamentals__row'}):
-                            tag_label = tag_inner.find('span', attrs={'class': 'tv-widget-fundamentals__label'}).get_text(
-                            ).replace('\n', '').replace('\r', '').replace('\t', '')
-                            tag_value = tag_inner.find('span', attrs={'class': 'tv-widget-fundamentals__value'}).get_text(
-                            ).replace('\n', '').replace('\r', '').replace('\t', '')
-                            data_inside[tag_label] = tag_value
-                        data[title] = data_inside
+                    market_index = 'Рыночная капитализация'
+                    data[market_index] = get_data_by_regex_trading(
+                        market_index, soup)
+
+                    market_index = 'Цена/Прибыль'
+                    data[market_index] = get_data_by_regex_trading(
+                        market_index, soup)
+
+                    market_index = 'Баз. прибыль на акцию'
+                    data[market_index] = get_data_by_regex_trading(
+                        market_index, soup)
+
+                    market_index = 'Код ISIN'
+                    data[market_index] = get_data_by_regex_trading(
+                        market_index, soup)
+
+                    market_index = 'Сектор'
+                    data[market_index] = get_data_by_regex_trading(
+                        market_index, soup)
+
+                    market_index = 'Дивидендный доход '
+                    data[market_index] = get_data_by_regex_trading(
+                        market_index, soup)
+
+                    market_index = 'Отрасль '
+                    data[market_index] = get_data_by_regex_trading(
+                        market_index, soup)
+
+                    market_index = 'Веб-сайт'
+                    data[market_index] = get_data_by_regex_trading(
+                        market_index, soup)
+
+                    market_index = 'CEO'
+                    data[market_index] = get_data_by_regex_trading(
+                        market_index, soup)
+
+                    market_index = 'Сотрудники'
+                    data[market_index] = get_data_by_regex_trading(
+                        market_index, soup)
+
+                    market_index = 'Дата основания'
+                    data[market_index] = get_data_by_regex_trading(
+                        market_index, soup)
+
+                    market_index = 'Главный офис'
+                    data[market_index] = get_data_by_regex_trading(
+                        market_index, soup)
 
                     with transaction.atomic():
                         s = SourceDataCompany(
-                            stock_ticker=stock_ticker,
+                            stock_ticker=item.stock_ticker,
                             source="Tradingview",
                             source_url=tradingview_dentifier,
                             json_value=data
@@ -128,7 +159,7 @@ def get_trading_data(self):
                 else:
                     with transaction.atomic():
                         s = SourceDataCompany(
-                            stock_ticker=stock_ticker,
+                            stock_ticker=item.stock_ticker,
                             source="Tradingview",
                             source_url=tradingview_dentifier,
                             json_value={'status': 'Произошла ошибка'}
@@ -138,11 +169,9 @@ def get_trading_data(self):
                 res.append(data)
             return res
         else:
-            return 'There are no search data available on investing.com'
-    except (TimeoutException, NoSuchElementException, WebDriverException, Exception, MaxRetriesExceededError) as e:
+            return 'There are no search data available on tradingview.com'
+    except Exception as e:
         raise self.retry(exc=e)
-
-
 
 
 def clear_text(row):
@@ -167,13 +196,14 @@ def get_investing_data(self):
                     "browserName": "chrome",
                     "browserVersion": "91.0",
                     "selenoid:options": {
-                        "enableVNC": False,
+                        "enableVNC": True,
                         "enableVideo": False,
                         "sessionTimeout": "5m",
                     }
                 }
                 driver = webdriver.Remote(
-                    command_executor='http://selenoid:4444/wd/hub', desired_capabilities=capabilities)
+                    command_executor='http://selenoid:4444/wd/hub',
+                    desired_capabilities=capabilities)
                 source_url = investing_dentifier+'-balance-sheet'
                 driver.maximize_window()
                 driver.get(source_url)
@@ -227,7 +257,7 @@ def get_investing_data(self):
                             # Блок поиска конкретных значений в строке и упаковка в структуру table_data_value
                             table_parent_row_values = table_row.find_all('td',)
                             i = 0
-                            for table_parent_row_value in table_parent_row_values:
+                            for _ in table_parent_row_values:
                                 if i != 0:
                                     row_value[fin_table[i].strip()] = clear_text(
                                         table_parent_row_values[i])
@@ -259,4 +289,3 @@ def get_investing_data(self):
             return 'There are no search data available on investing.com'
     except (TimeoutException, NoSuchElementException, WebDriverException, Exception, MaxRetriesExceededError) as e:
         raise self.retry(exc=e)
-

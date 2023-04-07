@@ -1,40 +1,33 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-
 import re
-import sys
+
 import requests
+
 from bs4 import BeautifulSoup
-from django.http import HttpResponse
-from rest_framework.serializers import ValidationError
-from .models import Stock
-from .models import SourceDataCompany
-from .serializers import StockSerializer, SourceDataCompanySerializer
-from rest_framework import viewsets
-from rest_framework import status
 from django.db import transaction
-from selenium import webdriver
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.support.ui import WebDriverWait
-from .tasks import get_investing_identify
+from django.http import HttpResponse
 from django.utils import timezone
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
+from rest_framework.views import APIView
+
+from .models import SourceDataCompany, Stock
+from .serializers import StockSerializer
+from .tasks import get_investing_identify
+
 tz = timezone.get_default_timezone()
 
 
+def get_data_by_regex(regexp, soup):
+    match_string = soup.find('div', text=re.compile(r'\b{}'.format(regexp)))
+    if not match_string is None:
+        return match_string.find_next('div', class_=re.compile('value-.*')).text.strip()
+    else:
+        return "Данные отсутсвуют"
+
+
 class StockViews(APIView):
-
-    # Поиск текста в теге ниже после регульярного выражения
-    def get_data_by_regex(self, regexp, soup):
-        match_string = soup.find(text=re.compile(r'\b{}'.format(regexp)))
-        # print(match_string)
-        if not match_string is None:
-            return match_string.find_next('span', attrs={'class': 'tv-widget-description__value'}).text.strip()
-        else:
-            return "Данные отсутсвуют"
-
-    def setUp(self):
-        self.driver = webdriver.Firefox()
 
     # Проверка тикера на сушествование
     @transaction.non_atomic_requests
@@ -42,31 +35,24 @@ class StockViews(APIView):
         try:
             response_tradingview = requests.get(
                 "https://ru.tradingview.com/symbols/"+stock+"/")
+
             stock_ticker = re.search('(?<=/symbols/).*?(?=/)',
                                      response_tradingview.url)
             if response_tradingview.status_code != 404:
                 soup_tradingview = BeautifulSoup(
                     response_tradingview.text, 'html.parser')
                 stock_name = soup_tradingview.find(
-                    'div', class_='tv-symbol-header__first-line')
-                stock_sector = self.get_data_by_regex(
-                    'Сектор:', soup_tradingview)
-                stock_industry = self.get_data_by_regex(
-                    'Отрасль:', soup_tradingview)
+                    'h1')
+
+                stock_sector = get_data_by_regex(
+                    'Сектор', soup_tradingview)
+                stock_industry = get_data_by_regex(
+                    'Отрасль', soup_tradingview)
 
                 stock_name = stock_name.text
-                url_investing = "https://ru.investing.com/search/?q="+stock_name+"/"
-                capabilities = {
-                    "browserName": "chrome",
-                    "browserVersion": "91.0",
-                    "selenoid:options": {
-                        "enableVNC": False,
-                        "enableVideo": False,
-                    }
-                }
-                return({'status': 'found', 'message': 'Акция найдена', 'tradingview_dentifier': response_tradingview.url, 'stock_ticker': stock_ticker.group(0), 'stock_name': stock_name, 'stock_sector': stock_sector, 'stock_industry': stock_industry})
+                return ({'status': 'found', 'message': 'Акция найдена', 'tradingview_dentifier': response_tradingview.url, 'stock_ticker': stock_ticker.group(0), 'stock_name': stock_name, 'stock_sector': stock_sector, 'stock_industry': stock_industry})
             else:
-                return({'status': 'not_found', 'message': 'Акция не найдена', 'tradingview_dentifier': response_tradingview.url, 'stock_ticker': stock_ticker.group(0)})
+                return ({'status': 'not_found', 'message': 'Акция не найдена', 'tradingview_dentifier': response_tradingview.url, 'stock_ticker': stock_ticker.group(0)})
         except requests.exceptions.ReadTimeout:
             return ({'status': 'connection_error', 'message': 'Превышение времени ожидания ответа'})
 
@@ -115,17 +101,15 @@ class StockViews(APIView):
                                     stock_ticker=ticker_status['stock_ticker'],
                                 )
                                 s.save()
-                                print(s.stock_name)
 
                             # Проверка на сохранение в базе?
-                            if(s.pk):
+                            if (s.pk):
                                 saved_tiker.append(s.pk)
                                 tickers.append(ticker_status)
                     else:
                         # Тикер не найден
                         tickers.append(ticker_status)
             if saved_tiker:
-                print(saved_tiker)
                 get_investing_identify.apply_async(
                     countdown=30)
 
@@ -144,8 +128,7 @@ class StockViews(APIView):
         serializer = StockSerializer(queryset, many=True)
         return Response(serializer.data)
 
-     # Обработка DELETE get ticker
-
+    # Обработка DELETE get ticker
     def delete(self, request, id, format=None):
         with transaction.atomic():
             Stock.objects.filter(
@@ -153,7 +136,7 @@ class StockViews(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-      # Обработка DELETE get ticker
+    # Обработка DELETE get ticker
     def put(self, request, id, format=None):
         with transaction.atomic():
             Stock.objects.filter(
@@ -168,7 +151,6 @@ def index(request):
 
 @api_view(('GET',))
 def get_ticker_id(self, ticker):
-    print(id)
     queryset = Stock.objects.filter(
         stock_ticker=ticker)
     serializer = StockSerializer(queryset, many=True)

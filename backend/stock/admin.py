@@ -1,13 +1,10 @@
-from django.contrib import admin
-# Register your models here.
-from django.db import models
-from .models import SourceDataCompany
-from .models import Stock
 import json
-from django.utils.safestring import mark_safe
+
+from django.contrib import admin
 from django.utils.html import format_html
-from django_celery_results.models import TaskResult
-from django_celery_results.admin import TaskResultAdmin
+from django.utils.safestring import mark_safe
+
+from .models import SourceDataCompany, Stock
 
 
 class StockAdmin(admin.ModelAdmin):
@@ -28,7 +25,10 @@ class SourceDataCompanyAdmin(admin.ModelAdmin):
         return False
 
     def source_formatted(self, obj):
-        return format_html('<a href ='+obj.source_url+' target = "_blank" rel = "noopener noreferrer" > '+obj.source_url + ' </a>')
+        return format_html(
+            '<a href ='+obj.source_url
+            + 'target = "_blank" rel = "noopener noreferrer" > '
+            + obj.source_url + ' </a>')
     source_formatted.short_description = 'Ссылка на источник данных'
 
     def json_value_formatted(self, obj=None):

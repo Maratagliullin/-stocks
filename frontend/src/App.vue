@@ -2,8 +2,8 @@
   <div id="app">
     <div class="container-fluid">
       <div id="nav">
-        <router-link to="/">Главная</router-link>
-        |
+        <router-link to="/" exact>Главная</router-link>
+         | 
         <router-link to="/ticker">Акции</router-link>
       </div>
       <router-view />
@@ -29,7 +29,7 @@
   text-decoration: underline;
 }
 
-#nav a.router-link-exact-active {
+#nav a.router-link-active {
   color: #42b983;
 }
 </style>
