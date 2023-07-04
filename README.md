@@ -24,9 +24,9 @@
 Находясь в директории проекта на одном уровне с файлом `prepare_browsers.bash` выполнить команду:  
 `sh prepare_browsers.bash`.
 
-Заполнить файлы переменных окружения своими параметрами!
-.env - корневая дирректория, основные настройки бекенда
-.env - frontend/.env основные настройки фронтенда
+**Заполнить файлы переменных окружения своими параметрами!**  
+.env - корневая дирректория, основные настройки бекенда  
+.env - frontend/.env основные настройки фронтенда  
 
 Находясь в директории проекта на одном уровне с файлом `docker-compose.local.yml` запустить:  
 `docker-compose -f docker-compose.local.yml up`
@@ -39,15 +39,13 @@
 **Логин:** administrator  
 **Пароль:** adminpass  
 
-Опрос тикера акции производтся каждые 10 минут, этот параметр опционален и меняется в trading/settings.py, параметр `CELERY_BEAT_SCHEDULE`  
+Опрос тикера акции производится каждые 10 минут, этот параметр опционален и меняется в trading/settings.py, параметр `CELERY_BEAT_SCHEDULE`  
 
 **Запуск тестов:**  
 `docker exec stocks_backend_1 pytest -v`
 
-
 **Пример файла переменных окружения local.env (файл переменных окружения):**  
-```
-DJANGO_SETTINGS_MODULE=trading.settings
+```DJANGO_SETTINGS_MODULE=trading.settings
 DJANGO_WSGI=trading.wsgi
 PYTHONUNBUFFERED=1
 DATABASE_URL=postgres://localdb:localdb@db:5432/localdb
