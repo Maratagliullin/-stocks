@@ -36,7 +36,7 @@ def get_investing_identify(self):
                     "browserName": "chrome",
                     "browserVersion": "91.0",
                     "selenoid:options": {
-                        "enableVNC": False,
+                        "enableVNC": True,
                         "enableVideo": False,
                         "sessionTimeout": "5m",
                     }
