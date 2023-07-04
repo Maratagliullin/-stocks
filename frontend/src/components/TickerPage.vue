@@ -104,7 +104,21 @@ export default {
         this.getTickerDataDateTradingview = this.$store.getters.getTickerDataDateTradingview
         this.getTickerDataJsonTradingview = this.$store.getters.getTickerDataJsonTradingview
       })
+    }),
+     (this.interval = setInterval(
+        function() {
+         var id = this.$route.params.id
+        this.getTickerByTickerNameServer(String(id)).then(() => {
+        this.getTickerDataByServer(String(id)).then(() => {
+        this.getTickerDataDateInvesting = this.$store.getters.getTickerDataDateInvesting
+        this.getTickerDataJsonInvesting = this.$store.getters.getTickerDataJsonInvesting
+        this.getTickerDataDateTradingview = this.$store.getters.getTickerDataDateTradingview
+        this.getTickerDataJsonTradingview = this.$store.getters.getTickerDataJsonTradingview
+      })
     })
+        }.bind(this),
+        15000
+      ))
   },
 }
 </script>
